@@ -1,0 +1,491 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Profile & Settings - Personal Nutrition AI{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="header-decoration">
+            <div class="decoration-circle"></div>
+            <div class="decoration-circle"></div>
+            <div class="decoration-circle"></div>
+        </div>
+        <h1>Profile & Settings</h1>
+        <p>Manage your account and preferences</p>
+    </div>
+    
+    <div class="profile-nav">
+        <a href="{{ url_for('auth.profile_basic') }}" class="profile-nav-item fade-in" style="animation-delay: 0.1s">
+            <div class="nav-icon-wrapper">
+                <div class="nav-icon">👤</div>
+                <div class="nav-icon-bg"></div>
+            </div>
+            <div class="nav-content">
+                <h3>Basic Information</h3>
+                <p>Name, physical stats, and units</p>
+                <div class="nav-arrow">→</div>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('auth.profile_preferences') }}" class="profile-nav-item fade-in" style="animation-delay: 0.2s">
+            <div class="nav-icon-wrapper">
+                <div class="nav-icon">🥗</div>
+                <div class="nav-icon-bg"></div>
+            </div>
+            <div class="nav-content">
+                <h3>Dietary Preferences</h3>
+                <p>Diet type, allergies, and health goals</p>
+                <div class="nav-arrow">→</div>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('auth.profile_notifications') }}" class="profile-nav-item fade-in" style="animation-delay: 0.3s">
+            <div class="nav-icon-wrapper">
+                <div class="nav-icon">🔔</div>
+                <div class="nav-icon-bg"></div>
+            </div>
+            <div class="nav-content">
+                <h3>Notifications</h3>
+                <p>Tips, reminders, and reports</p>
+                <div class="nav-arrow">→</div>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('auth.profile_privacy') }}" class="profile-nav-item fade-in" style="animation-delay: 0.4s">
+            <div class="nav-icon-wrapper">
+                <div class="nav-icon">🔒</div>
+                <div class="nav-icon-bg"></div>
+            </div>
+            <div class="nav-content">
+                <h3>Privacy & Data</h3>
+                <p>Data sharing and privacy settings</p>
+                <div class="nav-arrow">→</div>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('auth.change_password') }}" class="profile-nav-item fade-in" style="animation-delay: 0.5s">
+            <div class="nav-icon-wrapper">
+                <div class="nav-icon">🔑</div>
+                <div class="nav-icon-bg"></div>
+            </div>
+            <div class="nav-content">
+                <h3>Change Password</h3>
+                <p>Update your account password</p>
+                <div class="nav-arrow">→</div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="profile-actions">
+        <div class="action-card">
+            <h3>Data Export</h3>
+            <p>Download all your data (GDPR compliance)</p>
+            <a href="{{ url_for('auth.export_data') }}" class="btn btn-secondary">Export Data</a>
+        </div>
+        
+        {% if current_user.account_deletion_requested %}
+        <div class="action-card danger">
+            <h3>Account Deletion Scheduled</h3>
+            <p>Your account will be deleted on {{ current_user.deletion_deadline.strftime('%B %d, %Y') }}</p>
+            <form method="POST" action="{{ url_for('auth.cancel_deletion') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn btn-primary">Cancel Deletion</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="action-card danger">
+            <h3>Delete Account</h3>
+            <p>Permanently delete your account and all data</p>
+            <button onclick="confirmAccountDeletion()" class="btn btn-danger">Delete Account</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 4rem;
+    position: relative;
+}
+
+.profile-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+    border-radius: 2px;
+}
+
+.profile-header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.profile-header p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+.header-decoration {
+    position: absolute;
+    top: -2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0.3;
+}
+
+.decoration-circle {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    animation: decorationFloat 3s ease-in-out infinite;
+}
+
+.decoration-circle:nth-child(2) {
+    animation-delay: 0.5s;
+    background: var(--secondary-color);
+}
+
+.decoration-circle:nth-child(3) {
+    animation-delay: 1s;
+    background: var(--accent-color);
+}
+
+@keyframes decorationFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.profile-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.profile-nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1.5rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.3s var(--ease-out-quart);
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+}
+
+.profile-nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.profile-nav-item:hover::before {
+    left: 100%;
+}
+
+.profile-nav-item:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-color);
+    background: var(--glass-hover);
+}
+
+.nav-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+
+.nav-icon-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 50%;
+    opacity: 0.1;
+    transition: all 0.3s ease;
+    transform: scale(0.8);
+}
+
+.profile-nav-item:hover .nav-icon-bg {
+    opacity: 0.2;
+    transform: scale(1);
+}
+
+.nav-icon {
+    font-size: 2.2rem;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s var(--bounce);
+}
+
+.profile-nav-item:hover .nav-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.nav-content {
+    flex: 1;
+    position: relative;
+}
+
+.nav-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.profile-nav-item:hover .nav-content h3 {
+    color: var(--primary-color);
+}
+
+.nav-content p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    transition: color 0.3s ease;
+}
+
+.profile-nav-item:hover .nav-content p {
+    color: var(--text-primary);
+}
+
+.nav-arrow {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%) translateX(10px);
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    opacity: 0;
+    transition: all 0.3s var(--ease-out-quart);
+}
+
+.profile-nav-item:hover .nav-arrow {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+
+.profile-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.action-card {
+    padding: 1.5rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1rem;
+    box-shadow: var(--glass-shadow);
+}
+
+.action-card.danger {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.action-card h3 {
+    margin: 0 0 0.5rem 0;
+}
+
+.action-card p {
+    margin: 0 0 1rem 0;
+    color: var(--text-secondary);
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+/* Enhanced Responsive Design */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 1rem;
+    }
+    
+    .profile-header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .profile-nav {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .profile-nav-item {
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+    
+    .nav-icon-wrapper {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .nav-icon {
+        font-size: 1.8rem;
+    }
+    
+    .nav-content h3 {
+        font-size: 1.1rem;
+    }
+    
+    .nav-content p {
+        font-size: 0.85rem;
+    }
+    
+    .profile-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-header h1 {
+        font-size: 2rem;
+    }
+    
+    .profile-nav-item {
+        padding: 1.25rem;
+    }
+    
+    .nav-icon-wrapper {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .nav-icon {
+        font-size: 1.6rem;
+    }
+}
+
+/* Dark theme enhancements */
+[data-theme="dark"] .profile-nav-item {
+    background: rgba(30, 41, 59, 0.4);
+    border-color: rgba(203, 213, 225, 0.1);
+}
+
+[data-theme="dark"] .profile-nav-item:hover {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .nav-icon-bg {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+/* Loading animation for page */
+.profile-nav-item {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.profile-nav-item.fade-in {
+    animation: slideUpFade 0.6s ease-out forwards;
+}
+
+@keyframes slideUpFade {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hover effects for better interaction */
+.profile-nav-item:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+/* Focus states for accessibility */
+.profile-nav-item:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Enhanced glass effect */
+.profile-nav-item {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* Subtle pulse animation for icons */
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.profile-nav-item:hover .nav-icon {
+    animation: iconPulse 2s ease-in-out infinite;
+}
+</style>
+
+<script>
+function confirmAccountDeletion() {
+    if (confirm('Are you sure you want to delete your account? This action cannot be undone and you will have 30 days to cancel.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("auth.delete_account") }}';
+        
+        const csrfToken = document.querySelector('meta[name=csrf-token]');
+        if (csrfToken) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'csrf_token';
+            input.value = csrfToken.getAttribute('content');
+            form.appendChild(input);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

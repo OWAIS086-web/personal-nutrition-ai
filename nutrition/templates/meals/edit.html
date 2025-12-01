@@ -1,0 +1,369 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit Meal - Personal Nutrition AI{% endblock %}
+
+{% block content %}
+<div class="meal-edit-container">
+    <div class="meal-edit-header">
+        <h1>Edit Meal: {{ meal.name }}</h1>
+        <div class="meal-meta">
+            <span class="meal-type">{{ meal.meal_type.title() }}</span>
+            <span class="meal-date">{{ meal.meal_date.strftime('%B %d, %Y') }}</span>
+        </div>
+    </div>
+
+    <div class="meal-edit-grid">
+        <!-- Left Column: Meal Items -->
+        <div class="meal-items-section">
+            {% if detected_foods %}
+            <div class="ai-meal-summary">
+                <div class="summary-header">
+                    <h2>🤖 AI Meal Analysis</h2>
+                </div>
+                <p class="summary-description">Our AI analyzed your meal photo and detected the following foods with their nutritional information:</p>
+                
+                <div class="detected-foods-grid">
+                    {% for food in detected_foods %}
+                    <div class="detected-food-card" data-food-index="{{ loop.index0 }}">
+                        <div class="food-card-header">
+                            <h4>{{ food.food_name }}</h4>
+                            <span class="confidence-badge">{{ (food.confidence * 100)|round|int }}% confident</span>
+                        </div>
+                        <div class="food-details">
+                            <div class="food-portion">
+                                <span class="portion-icon">⚖️</span>
+                                <span class="portion-text">~{{ food.estimated_grams }}g</span>
+                            </div>
+                            <div class="food-nutrition-detail">
+                                <div class="nutrition-row">
+                                    <span class="nutrition-label">🔥 Calories:</span>
+                                    <span class="nutrition-value">{{ food.estimated_nutrition.calories }} cal</span>
+                                </div>
+                                <div class="nutrition-row">
+                                    <span class="nutrition-label">🥩 Protein:</span>
+                                    <span class="nutrition-value">{{ food.estimated_nutrition.protein }}g</span>
+                                </div>
+                                <div class="nutrition-row">
+                                    <span class="nutrition-label">🍞 Carbs:</span>
+                                    <span class="nutrition-value">{{ food.estimated_nutrition.carbs }}g</span>
+                                </div>
+                                <div class="nutrition-row">
+                                    <span class="nutrition-label">🥑 Fat:</span>
+                                    <span class="nutrition-value">{{ food.estimated_nutrition.fat }}g</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Totals & Actions -->
+        <div class="meal-summary-section">
+            <div class="meal-totals-card">
+                <h3>📊 Nutrition Summary</h3>
+                <div class="totals-grid">
+                    <div class="total-item">
+                        <span class="total-icon">🔥</span>
+                        <span class="total-value" id="total-calories">{{ meal.total_calories|round(1) }}</span>
+                        <span class="total-label">Calories</span>
+                    </div>
+                    <div class="total-item">
+                        <span class="total-icon">🥩</span>
+                        <span class="total-value" id="total-protein">{{ meal.total_protein|round(1) }}</span>
+                        <span class="total-label">Protein (g)</span>
+                    </div>
+                    <div class="total-item">
+                        <span class="total-icon">🍞</span>
+                        <span class="total-value" id="total-carbs">{{ meal.total_carbs|round(1) }}</span>
+                        <span class="total-label">Carbs (g)</span>
+                    </div>
+                    <div class="total-item">
+                        <span class="total-icon">🥑</span>
+                        <span class="total-value" id="total-fat">{{ meal.total_fat|round(1) }}</span>
+                        <span class="total-label">Fat (g)</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if meal.image_path %}
+            <div class="meal-image-card">
+                <h3>Meal Photo</h3>
+                <img src="{{ url_for('static', filename='uploads/' + meal.image_path) }}" alt="Meal photo"
+                    class="meal-image">
+            </div>
+            {% endif %}
+
+            <div class="meal-actions">
+                <button onclick="saveMeal()" class="btn btn-primary btn-full">Save Meal</button>
+                <a href="{{ url_for('meal.history') }}" class="btn btn-secondary btn-full">Back to History</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<style>
+    .meal-edit-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .meal-edit-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .meal-meta {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .meal-type,
+    .meal-date {
+        padding: 0.25rem 0.75rem;
+        background: var(--bg-tertiary);
+        border-radius: 1rem;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+
+    .meal-edit-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+
+    .meal-items-section,
+    .meal-summary-section {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .meal-totals-card,
+    .meal-image-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .totals-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .total-item {
+        text-align: center;
+        padding: 1.25rem;
+        background: var(--bg-secondary);
+        border-radius: 0.75rem;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+
+    .total-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+        border-color: var(--primary-color);
+    }
+
+    .total-icon {
+        display: block;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        animation: iconBounce 2s infinite ease-in-out;
+    }
+
+    .total-item:nth-child(1) .total-icon { animation-delay: 0s; }
+    .total-item:nth-child(2) .total-icon { animation-delay: 0.2s; }
+    .total-item:nth-child(3) .total-icon { animation-delay: 0.4s; }
+    .total-item:nth-child(4) .total-icon { animation-delay: 0.6s; }
+
+    @keyframes iconBounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+
+    .total-value {
+        display: block;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .total-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .meal-image {
+        width: 100%;
+        border-radius: 0.5rem;
+    }
+
+    .ai-meal-summary {
+        padding: 2rem;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 1rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .summary-header {
+        margin-bottom: 1rem;
+    }
+
+    .summary-header h2 {
+        margin: 0;
+        color: var(--primary-color);
+        font-size: 1.5rem;
+    }
+
+    .summary-description {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .detected-foods-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+
+    .detected-food-card {
+        padding: 1.25rem;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-color);
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .food-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .food-card-header h4 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        flex: 1;
+    }
+
+    .confidence-badge {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        margin-left: 0.5rem;
+    }
+
+    .food-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .food-portion {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: var(--bg-tertiary);
+        border-radius: 0.5rem;
+    }
+
+    .portion-icon {
+        font-size: 1.25rem;
+    }
+
+    .portion-text {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .food-nutrition-detail {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .nutrition-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.875rem;
+    }
+
+    .nutrition-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .nutrition-value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+
+
+    .food-nutrition {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+
+
+
+    @media (max-width: 768px) {
+        .meal-edit-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .totals-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .detected-foods-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    const mealId = {{ meal.id }};
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/meal-editor.js') }}"></script>
+{% endblock %}

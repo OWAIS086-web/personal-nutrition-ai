@@ -1,0 +1,2247 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard - Personal Nutrition AI{% endblock %}
+
+{% block content %}
+<!-- Advanced Animated Background -->
+<div class="dashboard-animated-bg">
+    <!-- Floating Nutrition Icons -->
+    <div class="nutrition-particles">
+        <div class="nutrition-icon" style="--delay: 0s; --x: 5%; --y: 10%;">🍎</div>
+        <div class="nutrition-icon" style="--delay: 1s; --x: 15%; --y: 80%;">🥗</div>
+        <div class="nutrition-icon" style="--delay: 2s; --x: 85%; --y: 20%;">🥑</div>
+        <div class="nutrition-icon" style="--delay: 3s; --x: 75%; --y: 70%;">🍗</div>
+        <div class="nutrition-icon" style="--delay: 4s; --x: 25%; --y: 40%;">🥦</div>
+        <div class="nutrition-icon" style="--delay: 5s; --x: 90%; --y: 50%;">🍊</div>
+        <div class="nutrition-icon" style="--delay: 1.5s; --x: 50%; --y: 90%;">🥕</div>
+        <div class="nutrition-icon" style="--delay: 3.5s; --x: 10%; --y: 60%;">🍇</div>
+        <div class="nutrition-icon" style="--delay: 2.5s; --x: 60%; --y: 15%;">🥤</div>
+        <div class="nutrition-icon" style="--delay: 4.5s; --x: 40%; --y: 75%;">🍓</div>
+    </div>
+    
+    <!-- Animated Gradient Orbs -->
+    <div class="gradient-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    
+    <!-- Pulse Rings -->
+    <div class="pulse-rings">
+        <div class="pulse-ring" style="--delay: 0s; --x: 20%; --y: 30%;"></div>
+        <div class="pulse-ring" style="--delay: 2s; --x: 70%; --y: 60%;"></div>
+        <div class="pulse-ring" style="--delay: 4s; --x: 50%; --y: 80%;"></div>
+    </div>
+    
+    <!-- Data Stream Lines -->
+    <svg class="data-streams" viewBox="0 0 1920 1080">
+        <defs>
+            <linearGradient id="streamGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#10b981;stop-opacity:0" />
+                <stop offset="50%" style="stop-color:#10b981;stop-opacity:0.6" />
+                <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0" />
+            </linearGradient>
+        </defs>
+        <path class="stream-path" d="M 0,200 Q 480,100 960,200 T 1920,200" stroke="url(#streamGradient)" fill="none" />
+        <path class="stream-path" d="M 0,400 Q 480,500 960,400 T 1920,400" stroke="url(#streamGradient)" fill="none" style="animation-delay: 1s;" />
+        <path class="stream-path" d="M 0,600 Q 480,700 960,600 T 1920,600" stroke="url(#streamGradient)" fill="none" style="animation-delay: 2s;" />
+    </svg>
+    
+    <!-- Floating Stats Bubbles -->
+    <div class="stats-bubbles">
+        <div class="stat-bubble" style="--delay: 0s; --x: 10%; --y: 25%;">
+            <span class="bubble-icon">📊</span>
+        </div>
+        <div class="stat-bubble" style="--delay: 1.5s; --x: 80%; --y: 35%;">
+            <span class="bubble-icon">🎯</span>
+        </div>
+        <div class="stat-bubble" style="--delay: 3s; --x: 30%; --y: 65%;">
+            <span class="bubble-icon">💪</span>
+        </div>
+        <div class="stat-bubble" style="--delay: 4.5s; --x: 70%; --y: 85%;">
+            <span class="bubble-icon">⚡</span>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome back, {{ current_user.first_name }}!</h1>
+        <p>Here's your nutrition overview for today</p>
+        
+        <!-- Added analytics controls -->
+        <div class="analytics-controls">
+            <select id="time-period" class="period-select">
+                <option value="7">Last 7 days</option>
+                <option value="14">Last 14 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 3 months</option>
+            </select>
+            <button onclick="exportData()" class="btn btn-secondary btn-sm">Export Data</button>
+            <button onclick="refreshAnalytics()" class="btn btn-primary btn-sm">Refresh</button>
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        <!-- AI Tip of the Day Card -->
+        <div class="dashboard-card ai-tip-card">
+            <div class="card-header">
+                <h3>AI Tip of the Day</h3>
+                <button onclick="refreshTip()" class="refresh-btn" title="Get new tip">🔄</button>
+            </div>
+            <div class="ai-tip-content">
+                <div id="daily-tip-loading" class="loading-spinner hidden">Loading...</div>
+                <div id="daily-tip-text" class="tip-text">
+                    Loading your personalized tip...
+                </div>
+            </div>
+            <div class="tip-actions">
+                <button onclick="getWeeklyInsights()" class="btn btn-secondary btn-sm">Weekly Insights</button>
+                <button onclick="getGoalCoaching()" class="btn btn-secondary btn-sm">Goal Coaching</button>
+            </div>
+        </div>
+        
+        <!-- Enhanced Stats Card with Charts -->
+        <div class="dashboard-card stats-card enhanced-stats">
+            <div class="card-header">
+                <h3>Today's Progress</h3>
+                <div class="view-toggle">
+                    <button onclick="toggleStatsView('progress')" class="toggle-btn active" data-view="progress">Progress</button>
+                    <button onclick="toggleStatsView('chart')" class="toggle-btn" data-view="chart">Chart</button>
+                </div>
+            </div>
+            
+            <div id="progress-view" class="stats-view">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="today-calories">0</span>
+                        <span class="stat-label">Calories</span>
+                        <div class="stat-progress">
+                            <div class="progress-bar" id="calories-progress"></div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="today-protein">0g</span>
+                        <span class="stat-label">Protein</span>
+                        <div class="stat-progress">
+                            <div class="progress-bar" id="protein-progress"></div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="today-carbs">0g</span>
+                        <span class="stat-label">Carbs</span>
+                        <div class="stat-progress">
+                            <div class="progress-bar" id="carbs-progress"></div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="today-fat">0g</span>
+                        <span class="stat-label">Fat</span>
+                        <div class="stat-progress">
+                            <div class="progress-bar" id="fat-progress"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Added chart view for nutrition breakdown -->
+            <div id="chart-view" class="stats-view hidden">
+                <div class="nutrition-chart">
+                    <canvas id="nutrition-pie-chart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #3b82f6;"></span>
+                        <span>Protein</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #10b981;"></span>
+                        <span>Carbs</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #f59e0b;"></span>
+                        <span>Fat</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Added comprehensive analytics card -->
+        <!-- Enhanced Nutrition Trends Card -->
+        <div class="dashboard-card analytics-card fancy-trends-card">
+            <div class="card-header">
+                <h3>📈 Nutrition Trends</h3>
+                <div class="trend-controls">
+                    <select id="trend-period" class="period-select fancy-select" onchange="updateTrendPeriod()">
+                        <option value="1">Today</option>
+                        <option value="7" selected>Last 7 Days</option>
+                        <option value="14">Last 14 Days</option>
+                        <option value="30">Last 30 Days</option>
+                        <option value="90">Last 3 Months</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Metric Toggle Buttons -->
+            <div class="metric-toggles">
+                <button class="metric-toggle active" data-metric="calories" onclick="toggleMetric('calories')">
+                    <span class="metric-icon">🔥</span>
+                    <span class="metric-name">Calories</span>
+                </button>
+                <button class="metric-toggle active" data-metric="protein" onclick="toggleMetric('protein')">
+                    <span class="metric-icon">🥩</span>
+                    <span class="metric-name">Protein</span>
+                </button>
+                <button class="metric-toggle active" data-metric="carbs" onclick="toggleMetric('carbs')">
+                    <span class="metric-icon">🍞</span>
+                    <span class="metric-name">Carbs</span>
+                </button>
+                <button class="metric-toggle active" data-metric="fat" onclick="toggleMetric('fat')">
+                    <span class="metric-icon">🥑</span>
+                    <span class="metric-name">Fat</span>
+                </button>
+            </div>
+            
+            <!-- Fancy Chart Container -->
+            <div class="fancy-chart-container">
+                <div class="chart-loading hidden" id="trend-loading">
+                    <div class="loading-spinner-fancy"></div>
+                    <p>Loading nutrition data...</p>
+                </div>
+                <canvas id="fancy-trend-chart"></canvas>
+            </div>
+            
+            <!-- Enhanced Stats Grid -->
+            <div class="trend-stats-grid">
+                <div class="stat-card calories-stat">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-content">
+                        <div class="stat-row">
+                            <span class="stat-label">Avg</span>
+                            <span class="stat-value" id="calories-avg">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">High</span>
+                            <span class="stat-value" id="calories-high">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Low</span>
+                            <span class="stat-value" id="calories-low">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card protein-stat">
+                    <div class="stat-icon">🥩</div>
+                    <div class="stat-content">
+                        <div class="stat-row">
+                            <span class="stat-label">Avg</span>
+                            <span class="stat-value" id="protein-avg">0g</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">High</span>
+                            <span class="stat-value" id="protein-high">0g</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Low</span>
+                            <span class="stat-value" id="protein-low">0g</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card carbs-stat">
+                    <div class="stat-icon">🍞</div>
+                    <div class="stat-content">
+                        <div class="stat-row">
+                            <span class="stat-label">Avg</span>
+                            <span class="stat-value" id="carbs-avg">0g</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">High</span>
+                            <span class="stat-value" id="carbs-high">0g</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Low</span>
+                            <span class="stat-value" id="carbs-low">0g</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card fat-stat">
+                    <div class="stat-icon">🥑</div>
+                    <div class="stat-content">
+                        <div class="stat-row">
+                            <span class="stat-label">Avg</span>
+                            <span class="stat-value" id="fat-avg">0g</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">High</span>
+                            <span class="stat-value" id="fat-high">0g</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Low</span>
+                            <span class="stat-value" id="fat-low">0g</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Added meal frequency analysis -->
+        <div class="dashboard-card frequency-card">
+            <h3>Meal Patterns</h3>
+            <div class="frequency-charts">
+                <div class="meal-type-chart">
+                    <h4>Meal Types</h4>
+                    <canvas id="meal-type-chart"></canvas>
+                </div>
+                <div class="timing-chart">
+                    <h4>Eating Times</h4>
+                    <canvas id="timing-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced wearable integration -->
+        <div class="dashboard-card wearable-card">
+            <div class="card-header">
+                <h3>Health Metrics</h3>
+                <a href="{{ url_for('wearable.index') }}" class="btn btn-secondary btn-sm">Manage Devices</a>
+            </div>
+            <div id="wearable-metrics" class="wearable-metrics">
+                <div class="loading-spinner">Loading health data...</div>
+            </div>
+        </div>
+        
+        <!-- Recent Meals Card -->
+        <div class="dashboard-card recent-meals-card">
+            <div class="card-header">
+                <h3>Recent Meals</h3>
+                <a href="{{ url_for('meal.upload') }}" class="btn btn-primary btn-sm">Add Meal</a>
+            </div>
+            <div id="recent-meals-list" class="recent-meals-list">
+                <div class="loading-spinner">Loading recent meals...</div>
+            </div>
+        </div>
+        
+        <!-- Weekly Overview Card -->
+        <div class="dashboard-card weekly-card">
+            <h3>This Week</h3>
+            <div class="weekly-stats">
+                <div class="weekly-stat">
+                    <span class="weekly-value" id="week-meals">0</span>
+                    <span class="weekly-label">Meals Logged</span>
+                </div>
+                <div class="weekly-stat">
+                    <span class="weekly-value" id="week-days">0/7</span>
+                    <span class="weekly-label">Days Active</span>
+                </div>
+                <div class="weekly-stat">
+                    <span class="weekly-value" id="week-avg-calories">0</span>
+                    <span class="weekly-label">Avg Calories</span>
+                </div>
+            </div>
+            <button onclick="getWeeklyInsights()" class="btn btn-secondary btn-full">View Weekly Insights</button>
+        </div>
+        
+        <!-- Health Goals Card -->
+        <div class="dashboard-card goals-card">
+            <h3>Health Goals</h3>
+            <div id="health-goals-list" class="goals-list">
+                {% set user_goals = current_user.get_health_goals() %}
+                {% if user_goals %}
+                    {% set displayed_goals = [] %}
+                    {% for goal in user_goals %}
+                        {% set clean_goal_text = goal|clean_goal %}
+                        {% if clean_goal_text and clean_goal_text|length > 1 %}
+                            {% set _ = displayed_goals.append(clean_goal_text) %}
+                            <div class="goal-item">
+                                <span class="goal-icon">🎯</span>
+                                <span class="goal-text">{{ clean_goal_text }}</span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    {% if displayed_goals|length == 0 %}
+                        <p class="no-goals">No valid health goals found. <a href="{{ url_for('auth.profile_preferences') }}">Set your goals</a></p>
+                    {% endif %}
+                {% else %}
+                    <p class="no-goals">No health goals set yet. <a href="{{ url_for('auth.profile_preferences') }}">Set your goals</a></p>
+                {% endif %}
+            </div>
+            <div class="goals-actions">
+                <a href="{{ url_for('auth.profile_preferences') }}" class="btn btn-secondary btn-sm">Set Goals</a>
+                <button onclick="getGoalCoaching()" class="btn btn-primary btn-sm">Get Coaching</button>
+            </div>
+        </div>
+        
+        <!-- Quick Actions Card -->
+        <div class="dashboard-card actions-card">
+            <h3>Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="{{ url_for('meal.upload') }}" class="action-btn">
+                    <span class="action-icon">📷</span>
+                    <span class="action-text">Add Meal</span>
+                </a>
+                <a href="{{ url_for('meal.history') }}" class="action-btn">
+                    <span class="action-icon">📊</span>
+                    <span class="action-text">View History</span>
+                </a>
+                <a href="{{ url_for('wearable.index') }}" class="action-btn">
+                    <span class="action-icon">⌚</span>
+                    <span class="action-text">Sync Devices</span>
+                </a>
+                <a href="{{ url_for('auth.profile') }}" class="action-btn">
+                    <span class="action-icon">⚙️</span>
+                    <span class="action-text">Settings</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Insights Modal -->
+<div id="ai-insights-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="insights-modal-title">AI Insights</h3>
+            <button onclick="closeInsightsModal()" class="modal-close">×</button>
+        </div>
+        <div class="modal-body">
+            <div id="insights-loading" class="loading-spinner hidden">Loading insights...</div>
+            <div id="insights-content" class="insights-content"></div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeInsightsModal()" class="btn btn-secondary">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Export Modal -->
+<div id="export-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Export Nutrition Data</h3>
+            <button onclick="closeExportModal()" class="modal-close">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="export-options">
+                <div class="option-group">
+                    <label>Time Period:</label>
+                    <select id="export-period">
+                        <option value="7">Last 7 days</option>
+                        <option value="14">Last 14 days</option>
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 3 months</option>
+                        <option value="365">Last year</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <label>Format:</label>
+                    <select id="export-format">
+                        <option value="json">JSON</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeExportModal()" class="btn btn-secondary">Cancel</button>
+            <button onclick="performExport()" class="btn btn-primary">Export</button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Advanced Animated Background */
+.dashboard-animated-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Floating Nutrition Icons */
+.nutrition-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.nutrition-icon {
+    position: absolute;
+    font-size: 2.5rem;
+    opacity: 0.15;
+    animation: floatNutrition 20s infinite ease-in-out;
+    animation-delay: var(--delay);
+    left: var(--x);
+    top: var(--y);
+    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.3));
+}
+
+@keyframes floatNutrition {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 0.1;
+    }
+    25% {
+        transform: translate(30px, -30px) rotate(90deg);
+        opacity: 0.2;
+    }
+    50% {
+        transform: translate(-20px, 20px) rotate(180deg);
+        opacity: 0.15;
+    }
+    75% {
+        transform: translate(20px, 30px) rotate(270deg);
+        opacity: 0.18;
+    }
+}
+
+/* Gradient Orbs */
+.gradient-orbs {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.15;
+    animation: orbFloat 25s infinite ease-in-out;
+}
+
+.orb-1 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, #10b981, #3b82f6);
+    top: -100px;
+    left: -100px;
+    animation-delay: 0s;
+}
+
+.orb-2 {
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    bottom: -150px;
+    right: -150px;
+    animation-delay: 8s;
+}
+
+.orb-3 {
+    width: 350px;
+    height: 350px;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: 16s;
+}
+
+@keyframes orbFloat {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+    33% {
+        transform: translate(50px, -50px) scale(1.1);
+    }
+    66% {
+        transform: translate(-30px, 30px) scale(0.9);
+    }
+}
+
+/* Pulse Rings */
+.pulse-rings {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.pulse-ring {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 2px solid rgba(16, 185, 129, 0.3);
+    border-radius: 50%;
+    left: var(--x);
+    top: var(--y);
+    animation: pulseExpand 4s infinite ease-out;
+    animation-delay: var(--delay);
+}
+
+@keyframes pulseExpand {
+    0% {
+        transform: scale(0.5);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+/* Data Stream Lines */
+.data-streams {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.1;
+}
+
+.stream-path {
+    stroke-width: 2;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: streamFlow 8s infinite linear;
+}
+
+@keyframes streamFlow {
+    0% {
+        stroke-dashoffset: 1000;
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        stroke-dashoffset: 0;
+        opacity: 0;
+    }
+}
+
+/* Stats Bubbles */
+.stats-bubbles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.stat-bubble {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 2px solid rgba(16, 185, 129, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: var(--x);
+    top: var(--y);
+    animation: bubbleFloat 15s infinite ease-in-out;
+    animation-delay: var(--delay);
+    backdrop-filter: blur(5px);
+}
+
+.bubble-icon {
+    font-size: 1.5rem;
+    opacity: 0.6;
+}
+
+@keyframes bubbleFloat {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.3;
+    }
+    25% {
+        transform: translateY(-40px) scale(1.1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translateY(-80px) scale(0.9);
+        opacity: 0.4;
+    }
+    75% {
+        transform: translateY(-40px) scale(1.05);
+        opacity: 0.45;
+    }
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.dashboard-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.2s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+}
+
+.refresh-btn:hover {
+    background: var(--bg-tertiary);
+}
+
+/* AI Tip Card */
+.ai-tip-card {
+    grid-column: span 2;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+}
+
+.ai-tip-content {
+    margin-bottom: 1.5rem;
+}
+
+.tip-text {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.tip-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.tip-actions .btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.tip-actions .btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Stats Card */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 0.75rem;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-progress {
+    height: 4px;
+    background: var(--bg-tertiary);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+/* Recent Meals */
+.recent-meals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.recent-meal-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.recent-meal-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.meal-info h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+}
+
+.meal-info p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.meal-calories {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Weekly Stats */
+.weekly-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.weekly-stat {
+    text-align: center;
+}
+
+.weekly-value {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.weekly-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Goals */
+.goals-list {
+    margin-bottom: 1.5rem;
+}
+
+.goal-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.goal-item:last-child {
+    border-bottom: none;
+}
+
+.goal-icon {
+    font-size: 1.2rem;
+}
+
+.goal-text {
+    font-size: 0.875rem;
+}
+
+.no-goals {
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.goals-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Quick Actions */
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: var(--bg-tertiary);
+    transform: translateY(-2px);
+}
+
+.action-icon {
+    font-size: 1.5rem;
+}
+
+.action-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 1rem;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.insights-content {
+    line-height: 1.6;
+}
+
+.insights-content h4 {
+    color: var(--primary-color);
+    margin: 1rem 0 0.5rem 0;
+}
+
+.insights-content p {
+    margin-bottom: 1rem;
+}
+
+/* Analytics-specific styles */
+.analytics-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.period-select, .metric-select {
+    padding: 0.5rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 0.5rem;
+    background: var(--glass-bg);
+    color: var(--text-color);
+}
+
+.enhanced-stats {
+    grid-column: span 2;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.toggle-btn {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--glass-border);
+    background: transparent;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toggle-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.stats-view.hidden {
+    display: none;
+}
+
+.nutrition-chart {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.analytics-card {
+    grid-column: span 2;
+}
+
+/* Fancy Trends Card Styles */
+.fancy-trends-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+    border: 2px solid var(--glass-border);
+    position: relative;
+    overflow: hidden;
+}
+
+.fancy-trends-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+    animation: rotateGradient 20s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes rotateGradient {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.trend-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.fancy-select {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--primary-color);
+    border-radius: 0.5rem;
+    background: var(--glass-bg);
+    color: var(--text-color);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.fancy-select:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.metric-toggles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+}
+
+.metric-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border: 2px solid transparent;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.metric-toggle:hover::before {
+    left: 100%;
+}
+
+.metric-toggle:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.metric-toggle.active {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+}
+
+.metric-toggle .metric-icon {
+    font-size: 2rem;
+    animation: iconPulse 2s ease-in-out infinite;
+}
+
+.metric-toggle.active .metric-icon {
+    animation: iconBounce 1s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 1; }
+}
+
+@keyframes iconBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.metric-toggle .metric-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.fancy-chart-container {
+    position: relative;
+    height: 350px;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 1rem;
+    border: 1px solid var(--glass-border);
+}
+
+.chart-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+}
+
+.loading-spinner-fancy {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--glass-border);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.trend-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.stat-card {
+    padding: 1.25rem;
+    background: var(--bg-secondary);
+    border-radius: 0.75rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover::after {
+    transform: scaleX(1);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+}
+
+.stat-card .stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    display: block;
+    text-align: center;
+}
+
+.stat-card .stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-card .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.stat-card .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-card .stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.calories-stat {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(239, 68, 68, 0.1) 100%);
+}
+
+.protein-stat {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.1) 100%);
+}
+
+.carbs-stat {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.1) 100%);
+}
+
+.fat-stat {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.1) 100%);
+}
+
+.trend-chart {
+    height: 250px;
+    margin-bottom: 1rem;
+}
+
+.trend-stats {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.trend-stat {
+    text-align: center;
+}
+
+.trend-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.trend-value {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.frequency-card {
+    grid-column: span 2;
+}
+
+.frequency-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.meal-type-chart, .timing-chart {
+    text-align: center;
+}
+
+.meal-type-chart h4, .timing-chart h4 {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.meal-type-chart canvas, .timing-chart canvas {
+    max-height: 200px;
+}
+
+.wearable-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 0.5rem;
+}
+
+.metric-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.export-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.option-group label {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ai-tip-card {
+        grid-column: span 1;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .tip-actions {
+        flex-direction: column;
+    }
+    
+    .weekly-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .enhanced-stats, .analytics-card, .frequency-card {
+        grid-column: span 1;
+    }
+    
+    .frequency-charts {
+        grid-template-columns: 1fr;
+    }
+    
+    .analytics-controls {
+        flex-direction: column;
+    }
+}
+</style>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// Dashboard JavaScript functionality
+let nutritionChart, trendChart, mealTypeChart, timingChart;
+let currentPeriod = 7;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+    loadDailyTip();
+    initializeCharts();
+    
+    // Initialize fancy trends chart
+    initializeFancyTrendsChart();
+    loadFancyTrendsData(currentTrendPeriod);
+    
+    // Event listeners
+    const timePeriodEl = document.getElementById('time-period');
+    if (timePeriodEl) {
+        timePeriodEl.addEventListener('change', function(e) {
+            currentPeriod = parseInt(e.target.value);
+            refreshAnalytics();
+        });
+    }
+    
+    const trendMetricEl = document.getElementById('trend-metric');
+    if (trendMetricEl) {
+        trendMetricEl.addEventListener('change', function(e) {
+            updateTrendChart(e.target.value);
+        });
+    }
+});
+
+function loadDashboardData() {
+    // Load today's nutrition stats
+    loadTodayStats();
+    
+    // Load recent meals
+    loadRecentMeals();
+    
+    // Load weekly overview
+    loadWeeklyOverview();
+}
+
+function loadDailyTip() {
+    const tipElement = document.getElementById('daily-tip-text');
+    const loadingElement = document.getElementById('daily-tip-loading');
+    
+    loadingElement.classList.remove('hidden');
+    tipElement.style.opacity = '0.5';
+    
+    fetch('/api/coach/daily-tip')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                tipElement.textContent = data.tip;
+            } else {
+                tipElement.textContent = "Stay hydrated and eat a variety of colorful foods today!";
+            }
+        })
+        .catch(error => {
+            console.error('Error loading daily tip:', error);
+            tipElement.textContent = "Remember to nourish your body with wholesome foods today!";
+        })
+        .finally(() => {
+            loadingElement.classList.add('hidden');
+            tipElement.style.opacity = '1';
+        });
+}
+
+function refreshTip() {
+    loadDailyTip();
+}
+
+function loadTodayStats() {
+    fetch('/dashboard/api/goal-progress')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const current = data.current;
+                const targets = data.targets;
+                
+                updateStatDisplay('today-calories', current.calories, targets.calories, 'calories-progress');
+                updateStatDisplay('today-protein', current.protein, targets.protein, 'protein-progress');
+                updateStatDisplay('today-carbs', current.carbs, targets.carbs, 'carbs-progress');
+                updateStatDisplay('today-fat', current.fat, targets.fat, 'fat-progress');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading today stats:', error);
+            // Fallback to zeros
+            updateStatDisplay('today-calories', 0, 2000, 'calories-progress');
+            updateStatDisplay('today-protein', 0, 150, 'protein-progress');
+            updateStatDisplay('today-carbs', 0, 250, 'carbs-progress');
+            updateStatDisplay('today-fat', 0, 70, 'fat-progress');
+        });
+}
+
+function updateStatDisplay(elementId, current, target, progressId) {
+    // Format numbers to 1 decimal place
+    let displayValue = current;
+    const numericValue = parseFloat(current);
+    
+    if (elementId.includes('calories')) {
+        displayValue = numericValue.toFixed(1);
+    } else {
+        // For protein, carbs, fat - add 'g' suffix
+        displayValue = numericValue.toFixed(1) + 'g';
+    }
+    
+    document.getElementById(elementId).textContent = displayValue;
+    
+    const percentage = Math.min((numericValue / target) * 100, 100);
+    document.getElementById(progressId).style.width = percentage + '%';
+}
+
+function loadRecentMeals() {
+    const container = document.getElementById('recent-meals-list');
+    
+    fetch('/meals/api/recent?limit=5')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.meals && data.meals.length > 0) {
+                container.innerHTML = data.meals.map(meal => {
+                    const mealDate = new Date(meal.meal_date);
+                    const today = new Date();
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    
+                    let dateText = 'Earlier';
+                    if (mealDate.toDateString() === today.toDateString()) {
+                        dateText = 'Today';
+                    } else if (mealDate.toDateString() === yesterday.toDateString()) {
+                        dateText = 'Yesterday';
+                    } else {
+                        dateText = mealDate.toLocaleDateString();
+                    }
+                    
+                    return `
+                        <div class="recent-meal-item">
+                            <div class="meal-info">
+                                <h4>${meal.name}</h4>
+                                <p>${meal.meal_type.charAt(0).toUpperCase() + meal.meal_type.slice(1)} • ${dateText}</p>
+                            </div>
+                            <div class="meal-calories">${(meal.total_calories || 0).toFixed(1)} cal</div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = '<p class="text-muted">No recent meals found. <a href="/meals/upload">Add your first meal!</a></p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading recent meals:', error);
+            container.innerHTML = '<p class="text-muted">Unable to load recent meals.</p>';
+        });
+}
+
+function loadWeeklyOverview() {
+    fetch('/dashboard/api/nutrition-stats?days=7')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const dailyStats = data.daily_stats;
+                const totalMeals = Object.values(dailyStats).reduce((sum, day) => sum + (day.meals || 0), 0);
+                const daysWithMeals = Object.values(dailyStats).filter(day => day.meals > 0).length;
+                const avgCalories = data.averages.calories || 0;
+                
+                document.getElementById('week-meals').textContent = totalMeals;
+                document.getElementById('week-days').textContent = `${daysWithMeals}/7`;
+                document.getElementById('week-avg-calories').textContent = avgCalories.toFixed(1);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading weekly overview:', error);
+            document.getElementById('week-meals').textContent = '0';
+            document.getElementById('week-days').textContent = '0/7';
+            document.getElementById('week-avg-calories').textContent = '0';
+        });
+}
+
+function getWeeklyInsights() {
+    showInsightsModal('Weekly Insights', 'weekly');
+}
+
+function getGoalCoaching() {
+    showInsightsModal('Goal Coaching', 'goals');
+}
+
+function showInsightsModal(title, type) {
+    const modal = document.getElementById('ai-insights-modal');
+    const titleElement = document.getElementById('insights-modal-title');
+    const loadingElement = document.getElementById('insights-loading');
+    const contentElement = document.getElementById('insights-content');
+    
+    titleElement.textContent = title;
+    contentElement.innerHTML = '';
+    loadingElement.classList.remove('hidden');
+    modal.classList.remove('hidden');
+    
+    const endpoint = type === 'weekly' ? '/api/coach/weekly-insights' : '/api/coach/goal-coaching';
+    
+    fetch(endpoint)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let content = `<p>${data.insights || data.coaching}</p>`;
+                
+                if (data.stats) {
+                    content += `
+                        <h4>Weekly Statistics</h4>
+                        <p><strong>Days logged:</strong> ${data.stats.days_logged}/7</p>
+                        <p><strong>Total meals:</strong> ${data.stats.total_meals}</p>
+                        <p><strong>Average daily calories:</strong> ${data.stats.avg_calories}</p>
+                    `;
+                }
+                
+                if (data.goals && data.goals.length > 0) {
+                    content += `
+                        <h4>Your Goals</h4>
+                        <ul>
+                            ${data.goals.map(goal => `<li>${goal.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</li>`).join('')}
+                        </ul>
+                    `;
+                }
+                
+                contentElement.innerHTML = content;
+            } else {
+                contentElement.innerHTML = '<p>Unable to load insights at this time. Please try again later.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading insights:', error);
+            contentElement.innerHTML = '<p>Unable to load insights at this time. Please try again later.</p>';
+        })
+        .finally(() => {
+            loadingElement.classList.add('hidden');
+        });
+}
+
+function closeInsightsModal() {
+    document.getElementById('ai-insights-modal').classList.add('hidden');
+}
+
+function initializeCharts() {
+    // Initialize charts only if canvas elements exist
+    const nutritionPieEl = document.getElementById('nutrition-pie-chart');
+    const trendLineEl = document.getElementById('trend-line-chart');
+    const mealTypeEl = document.getElementById('meal-type-chart');
+    const timingEl = document.getElementById('timing-chart');
+    
+    if (nutritionPieEl) {
+        const ctx1 = nutritionPieEl.getContext('2d');
+        nutritionChart = new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: ['Protein', 'Carbs', 'Fat'],
+                datasets: [{
+                    data: [0, 0, 0],
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    if (trendLineEl) {
+        const ctx2 = trendLineEl.getContext('2d');
+        trendChart = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Calories',
+                    data: [],
+                    borderColor: '#3b82f6',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+    
+    if (mealTypeEl) {
+        const ctx3 = mealTypeEl.getContext('2d');
+        mealTypeChart = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: ['Breakfast', 'Lunch', 'Dinner', 'Snack'],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    if (timingEl) {
+        const ctx4 = timingEl.getContext('2d');
+        timingChart = new Chart(ctx4, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: '#10b981'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    loadAnalyticsData();
+}
+
+function loadAnalyticsData() {
+    Promise.all([
+        fetch(`/dashboard/api/nutrition-stats?days=${currentPeriod}`).then(r => r.json()),
+        fetch(`/dashboard/api/goal-progress`).then(r => r.json()),
+        fetch(`/dashboard/api/meal-frequency?days=${currentPeriod}`).then(r => r.json()),
+        fetch(`/dashboard/api/wearable-integration?days=${currentPeriod}`).then(r => r.json())
+    ]).then(([nutritionData, goalData, frequencyData, wearableData]) => {
+        updateNutritionChart(goalData);
+        updateTrendChart('calories', nutritionData);
+        updateFrequencyCharts(frequencyData);
+        updateWearableMetrics(wearableData);
+        updateTrendStats(nutritionData);
+    }).catch(error => {
+        console.error('Error loading analytics:', error);
+    });
+}
+
+function updateNutritionChart(data) {
+    if (!data.success || !nutritionChart) return;
+    
+    const current = data.current;
+    
+    // Update chart data
+    nutritionChart.data.datasets[0].data = [
+        current.protein || 0,
+        current.carbs || 0,
+        current.fat || 0
+    ];
+    nutritionChart.update();
+}
+
+function updateTrendChart(metric, data) {
+    if (!data || !data.success || !trendChart) return;
+    
+    const dailyStats = data.daily_stats;
+    const dates = Object.keys(dailyStats).sort();
+    const values = dates.map(date => dailyStats[date][metric] || 0);
+    
+    // Format dates for display
+    const labels = dates.map(date => {
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    
+    trendChart.data.labels = labels;
+    trendChart.data.datasets[0].data = values;
+    trendChart.data.datasets[0].label = metric.charAt(0).toUpperCase() + metric.slice(1);
+    trendChart.update();
+}
+
+function updateFrequencyCharts(data) {
+    if (!data.success) return;
+    
+    // Update meal type chart
+    if (mealTypeChart) {
+        const mealTypes = data.meal_types;
+        mealTypeChart.data.datasets[0].data = [
+            mealTypes.breakfast || 0,
+            mealTypes.lunch || 0,
+            mealTypes.dinner || 0,
+            mealTypes.snack || 0
+        ];
+        mealTypeChart.update();
+    }
+    
+    // Update timing chart
+    if (timingChart) {
+        const hourlyData = data.hourly_distribution;
+        const hours = Object.keys(hourlyData).sort((a, b) => parseInt(a) - parseInt(b));
+        const values = hours.map(hour => hourlyData[hour] || 0);
+        
+        // Format hours for display (e.g., "6am", "12pm", "6pm")
+        const labels = hours.map(hour => {
+            const h = parseInt(hour);
+            if (h === 0) return '12am';
+            if (h < 12) return h + 'am';
+            if (h === 12) return '12pm';
+            return (h - 12) + 'pm';
+        });
+        
+        timingChart.data.labels = labels;
+        timingChart.data.datasets[0].data = values;
+        timingChart.update();
+    }
+}
+
+function updateWearableMetrics(data) {
+    const container = document.getElementById('wearable-metrics');
+    
+    if (!data.success || !data.health_data) {
+        container.innerHTML = '<p class="text-muted">No wearable data available</p>';
+        return;
+    }
+    
+    const healthData = data.health_data;
+    let metricsHtml = '';
+    
+    Object.entries(healthData).forEach(([type, records]) => {
+        const latestDate = Object.keys(records).sort().pop();
+        if (latestDate && records[latestDate]) {
+            const record = records[latestDate];
+            metricsHtml += `
+                <div class="metric-item">
+                    <span class="metric-value">${parseFloat(record.value).toFixed(1)}</span>
+                    <span class="metric-label">${type.replace('_', ' ').toUpperCase()}</span>
+                </div>
+            `;
+        }
+    });
+    
+    container.innerHTML = metricsHtml || '<p class="text-muted">No recent data</p>';
+}
+
+function updateTrendStats(data) {
+    if (!data.success) return;
+    
+    const metric = document.getElementById('trend-metric').value;
+    
+    // Use the pre-calculated values from the API
+    const average = data.averages[metric] || 0;
+    const highest = data.highest[metric] || 0;
+    const lowest = data.lowest[metric] || 0;
+    
+    document.getElementById('trend-average').textContent = average.toFixed(1);
+    document.getElementById('trend-highest').textContent = highest.toFixed(1);
+    document.getElementById('trend-lowest').textContent = lowest.toFixed(1);
+}
+
+function toggleStatsView(view) {
+    document.querySelectorAll('.stats-view').forEach(el => el.classList.add('hidden'));
+    document.getElementById(view + '-view').classList.remove('hidden');
+    
+    document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-view="${view}"]`).classList.add('active');
+    
+    if (view === 'chart') {
+        // Refresh chart when switching to chart view
+        fetch('/dashboard/api/goal-progress')
+            .then(r => r.json())
+            .then(data => updateNutritionChart(data));
+    }
+}
+
+function refreshAnalytics() {
+    loadAnalyticsData();
+    loadTodayStats();
+    loadRecentMeals();
+    loadWeeklyOverview();
+}
+
+function exportData() {
+    document.getElementById('export-modal').classList.remove('hidden');
+}
+
+function closeExportModal() {
+    document.getElementById('export-modal').classList.add('hidden');
+}
+
+function performExport() {
+    const period = document.getElementById('export-period').value;
+    const format = document.getElementById('export-format').value;
+    
+    fetch(`/dashboard/api/export-data?days=${period}&format=${format}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const blob = new Blob([JSON.stringify(data.data, null, 2)], {
+                    type: format === 'csv' ? 'text/csv' : 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `nutrition-data-${period}days.${format}`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                closeExportModal();
+            }
+        })
+        .catch(error => {
+            console.error('Export failed:', error);
+            alert('Export failed. Please try again.');
+        });
+}
+
+// Close export modal when clicking outside
+document.getElementById('export-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeExportModal();
+    }
+});
+
+// Close modal when clicking outside
+document.getElementById('ai-insights-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeInsightsModal();
+    }
+});
+
+// ===== FANCY NUTRITION TRENDS CHART =====
+let fancyTrendChart = null;
+let activeMetrics = ['calories', 'protein', 'carbs', 'fat'];
+let currentTrendPeriod = 7;
+
+function initializeFancyTrendsChart() {
+    const ctx = document.getElementById('fancy-trend-chart');
+    if (!ctx) return;
+    
+    fancyTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            weight: '600'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: 'rgba(16, 185, 129, 0.5)',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.parsed.y.toFixed(1);
+                            if (context.dataset.label !== 'Calories') {
+                                label += 'g';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(16, 185, 129, 0.1)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            },
+            elements: {
+                line: {
+                    tension: 0.4,
+                    borderWidth: 3
+                },
+                point: {
+                    radius: 4,
+                    hoverRadius: 6,
+                    borderWidth: 2,
+                    backgroundColor: '#fff'
+                }
+            }
+        }
+    });
+}
+
+function loadFancyTrendsData(days) {
+    const loadingEl = document.getElementById('trend-loading');
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    
+    fetch(`/dashboard/api/nutrition-stats?days=${days}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateFancyTrendsChart(data);
+                updateTrendsStats(data);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading trends data:', error);
+        })
+        .finally(() => {
+            if (loadingEl) loadingEl.classList.add('hidden');
+        });
+}
+
+function updateFancyTrendsChart(data) {
+    if (!fancyTrendChart) return;
+    
+    const dailyStats = data.daily_stats;
+    const dates = Object.keys(dailyStats).sort();
+    
+    // Format dates for display
+    const labels = dates.map(date => {
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    
+    // Prepare datasets for each metric
+    const datasets = [];
+    
+    const metricConfigs = {
+        calories: {
+            label: '🔥 Calories',
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            pointBackgroundColor: 'rgb(239, 68, 68)',
+            pointBorderColor: '#fff'
+        },
+        protein: {
+            label: '🥩 Protein',
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#fff'
+        },
+        carbs: {
+            label: '🍞 Carbs',
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            pointBackgroundColor: 'rgb(16, 185, 129)',
+            pointBorderColor: '#fff'
+        },
+        fat: {
+            label: '🥑 Fat',
+            borderColor: 'rgb(245, 158, 11)',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            pointBackgroundColor: 'rgb(245, 158, 11)',
+            pointBorderColor: '#fff'
+        }
+    };
+    
+    // Add datasets for active metrics
+    activeMetrics.forEach(metric => {
+        if (metricConfigs[metric]) {
+            const config = metricConfigs[metric];
+            datasets.push({
+                label: config.label,
+                data: dates.map(date => dailyStats[date][metric]),
+                borderColor: config.borderColor,
+                backgroundColor: config.backgroundColor,
+                pointBackgroundColor: config.pointBackgroundColor,
+                pointBorderColor: config.pointBorderColor,
+                fill: true
+            });
+        }
+    });
+    
+    fancyTrendChart.data.labels = labels;
+    fancyTrendChart.data.datasets = datasets;
+    fancyTrendChart.update('active');
+}
+
+function updateTrendsStats(data) {
+    const averages = data.averages;
+    const highest = data.highest;
+    const lowest = data.lowest;
+    
+    // Update calories stats
+    document.getElementById('calories-avg').textContent = averages.calories || 0;
+    document.getElementById('calories-high').textContent = highest.calories || 0;
+    document.getElementById('calories-low').textContent = lowest.calories || 0;
+    
+    // Update protein stats
+    document.getElementById('protein-avg').textContent = (averages.protein || 0) + 'g';
+    document.getElementById('protein-high').textContent = (highest.protein || 0) + 'g';
+    document.getElementById('protein-low').textContent = (lowest.protein || 0) + 'g';
+    
+    // Update carbs stats
+    document.getElementById('carbs-avg').textContent = (averages.carbs || 0) + 'g';
+    document.getElementById('carbs-high').textContent = (highest.carbs || 0) + 'g';
+    document.getElementById('carbs-low').textContent = (lowest.carbs || 0) + 'g';
+    
+    // Update fat stats
+    document.getElementById('fat-avg').textContent = (averages.fat || 0) + 'g';
+    document.getElementById('fat-high').textContent = (highest.fat || 0) + 'g';
+    document.getElementById('fat-low').textContent = (lowest.fat || 0) + 'g';
+}
+
+function toggleMetric(metric) {
+    const button = document.querySelector(`[data-metric="${metric}"]`);
+    
+    if (activeMetrics.includes(metric)) {
+        // Remove metric
+        activeMetrics = activeMetrics.filter(m => m !== metric);
+        button.classList.remove('active');
+    } else {
+        // Add metric
+        activeMetrics.push(metric);
+        button.classList.add('active');
+    }
+    
+    // Reload chart with updated metrics
+    loadFancyTrendsData(currentTrendPeriod);
+}
+
+function updateTrendPeriod() {
+    const select = document.getElementById('trend-period');
+    currentTrendPeriod = parseInt(select.value);
+    loadFancyTrendsData(currentTrendPeriod);
+}
+</script>
+{% endblock %}

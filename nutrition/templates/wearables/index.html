@@ -1,0 +1,411 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Wearables - Personal Nutrition AI{% endblock %}
+
+{% block content %}
+<div class="wearable-container">
+    <div class="wearable-header">
+        <h1>Connected Devices</h1>
+        <p>Sync your fitness data from wearable devices</p>
+    </div>
+    
+    <!-- Replaced placeholder with full wearable management interface -->
+    <div class="devices-grid">
+        <!-- Fitbit Integration Card -->
+        <div class="device-card">
+            <div class="device-header">
+                <div class="device-icon fitbit-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="device-info">
+                    <h3>Fitbit</h3>
+                    <p class="device-status {% if fitbit_connected %}connected{% else %}disconnected{% endif %}">
+                        {% if fitbit_connected %}Connected{% else %}Not Connected{% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            {% if fitbit_connected %}
+                <div class="device-actions">
+                    <form method="POST" action="{{ url_for('wearable.sync_fitbit') }}" class="sync-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <select name="days_back" class="sync-select">
+                            <option value="7">Last 7 days</option>
+                            <option value="14">Last 14 days</option>
+                            <option value="30">Last 30 days</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">Sync Data</button>
+                    </form>
+                    
+                    <form method="POST" action="{{ url_for('wearable.disconnect_fitbit') }}" class="disconnect-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="disconnect-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="delete_data" value="true">
+                                <span class="checkmark"></span>
+                                Delete existing data
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to disconnect Fitbit?')">
+                            Disconnect
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="device-actions">
+                    <a href="{{ url_for('wearable.connect_fitbit') }}" class="btn btn-primary">
+                        Connect Fitbit
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Apple Health Integration Card -->
+        <div class="device-card">
+            <div class="device-header">
+                <div class="device-icon apple-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="device-info">
+                    <h3>Apple Health</h3>
+                    <p class="device-status">File Upload</p>
+                </div>
+            </div>
+            
+            <div class="device-actions">
+                <form method="POST" action="{{ url_for('wearable.upload_apple_health') }}" enctype="multipart/form-data" class="upload-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="file-upload">
+                        <input type="file" id="health_file" name="health_file" accept=".xml,.zip" class="file-input">
+                        <label for="health_file" class="file-label">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2"/>
+                                <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2"/>
+                                <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Choose Health Export File
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload Data</button>
+                </form>
+                
+                <div class="upload-help">
+                    <p>Export your health data from the Apple Health app and upload the XML file here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Data Summary -->
+    {% if data_summary %}
+    <div class="data-summary">
+        <h2>Recent Health Data</h2>
+        <div class="data-grid">
+            {% for data_type, records in data_summary.items() %}
+            <div class="data-card">
+                <h3>{{ data_type.replace('_', ' ').title() }}</h3>
+                <div class="data-chart" data-type="{{ data_type }}">
+                    <canvas id="chart-{{ loop.index }}"></canvas>
+                </div>
+                <div class="data-stats">
+                    {% set latest = records[-1] if records else None %}
+                    {% if latest %}
+                    <p class="latest-value">{{ latest.value }} {{ latest.unit }}</p>
+                    <p class="latest-date">{{ latest.date }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.wearable-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.wearable-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.devices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.device-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: var(--glass-shadow);
+}
+
+.device-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.device-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.fitbit-icon {
+    background: linear-gradient(135deg, #00B4DB, #0083B0);
+}
+
+.apple-icon {
+    background: linear-gradient(135deg, #333, #666);
+}
+
+.device-info h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.device-status {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+.device-status.connected {
+    color: var(--success-color, #10b981);
+}
+
+.device-status.disconnected {
+    color: var(--warning-color, #f59e0b);
+}
+
+.device-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sync-form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.sync-select {
+    padding: 0.5rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 0.5rem;
+    background: var(--glass-bg);
+    color: var(--text-color);
+}
+
+.disconnect-form {
+    padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.disconnect-options {
+    margin-bottom: 1rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.file-upload {
+    margin-bottom: 1rem;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 2px dashed var(--glass-border);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.file-label:hover {
+    border-color: var(--primary-color);
+    background: var(--glass-bg);
+}
+
+.upload-help {
+    font-size: 0.875rem;
+    opacity: 0.8;
+    margin-top: 0.5rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover, #2563eb);
+}
+
+.btn-danger {
+    background: var(--danger-color, #ef4444);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: var(--danger-hover, #dc2626);
+}
+
+.data-summary {
+    margin-top: 3rem;
+}
+
+.data-summary h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.data-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--glass-shadow);
+}
+
+.data-card h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.data-chart {
+    height: 150px;
+    margin-bottom: 1rem;
+}
+
+.data-stats {
+    text-align: center;
+}
+
+.latest-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.latest-date {
+    font-size: 0.875rem;
+    opacity: 0.8;
+    margin: 0.25rem 0 0 0;
+}
+
+@media (max-width: 768px) {
+    .devices-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sync-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .data-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle file upload display
+    const fileInput = document.getElementById('health_file');
+    const fileLabel = document.querySelector('.file-label');
+    
+    if (fileInput && fileLabel) {
+        fileInput.addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || 'Choose Health Export File';
+            fileLabel.querySelector('span')?.remove();
+            fileLabel.appendChild(document.createTextNode(' ' + fileName));
+        });
+    }
+    
+    // Simple data visualization (placeholder for actual charts)
+    const dataCharts = document.querySelectorAll('.data-chart canvas');
+    dataCharts.forEach(canvas => {
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        // Draw simple placeholder chart
+        ctx.strokeStyle = 'var(--primary-color)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        const points = 7;
+        for (let i = 0; i < points; i++) {
+            const x = (canvas.width / (points - 1)) * i;
+            const y = canvas.height - (Math.random() * canvas.height * 0.8 + canvas.height * 0.1);
+            
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        
+        ctx.stroke();
+    });
+});
+</script>
+{% endblock %}

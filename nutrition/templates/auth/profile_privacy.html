@@ -1,0 +1,74 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Privacy & Data - Profile{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>Privacy & Data Settings</h1>
+        <p>Control your data sharing and privacy preferences</p>
+    </div>
+
+    <div class="glass-card">
+        <form method="POST" class="profile-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-section">
+                <h3>Data Sharing</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        {{ form.share_data(class="form-checkbox") }}
+                        <label for="{{ form.share_data.id }}">
+                            <strong>Share anonymized data for research</strong>
+                            <small>Help improve nutrition science</small>
+                        </label>
+                    </div>
+                    <div class="checkbox-item">
+                        {{ form.analytics(class="form-checkbox") }}
+                        <label for="{{ form.analytics.id }}">
+                            <strong>Allow analytics tracking</strong>
+                            <small>Help us improve the app experience</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Profile Visibility</h3>
+                <div class="form-group">
+                    {{ form.profile_visibility.label(class="form-label") }}
+                    {{ form.profile_visibility(class="form-select") }}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Data Retention</h3>
+                <div class="form-group">
+                    {{ form.data_retention.label(class="form-label") }}
+                    {{ form.data_retention(class="form-select") }}
+                    <small class="form-hint">How long to keep your nutrition data</small>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Marketing Communications</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        {{ form.marketing_emails(class="form-checkbox") }}
+                        <label for="{{ form.marketing_emails.id }}">Receive marketing emails</label>
+                    </div>
+                    <div class="checkbox-item">
+                        {{ form.product_updates(class="form-checkbox") }}
+                        <label for="{{ form.product_updates.id }}">Product updates and news</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">← Back to Profile</a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Add Meal - Personal Nutrition AI{% endblock %}
+
+{% block content %}
+<div class="meal-container">
+    <div class="meal-header">
+        <h1>Add New Meal</h1>
+        <p>Upload a photo and AI will automatically detect your food</p>
+    </div>
+    
+    <div class="meal-upload-card">
+        <form method="POST" enctype="multipart/form-data" class="meal-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.meal_type.label(class="form-label") }}
+                {{ form.meal_type(class="form-select") }}
+                {% if form.meal_type.errors %}
+                    <div class="form-error">{{ form.meal_type.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.meal_image.label(class="form-label") }}
+                <div class="image-upload-area" onclick="document.getElementById('meal_image').click()">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">
+                        <p><strong>Click to upload photo</strong></p>
+                        <p>or drag and drop an image here</p>
+                        <p class="upload-hint">AI will analyze your meal automatically</p>
+                    </div>
+                    {{ form.meal_image(class="hidden", id="meal_image", onchange="previewImage(this)") }}
+                </div>
+                <div id="image-preview" class="image-preview hidden"></div>
+                {% if form.meal_image.errors %}
+                    <div class="form-error">{{ form.meal_image.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-full">
+                    <span class="btn-icon">🔍</span>
+                    Analyze Meal
+                </button>
+                <p class="form-hint">You can edit detected foods on the next page</p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.meal-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.meal-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.meal-upload-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1rem;
+    padding: 2.5rem;
+    box-shadow: var(--glass-shadow);
+}
+
+.meal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.image-upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 0.75rem;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--bg-secondary);
+}
+
+.image-upload-area:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-tertiary);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.upload-text p {
+    margin: 0.5rem 0;
+}
+
+.upload-hint {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.image-preview {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.image-preview img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-actions {
+    text-align: center;
+}
+
+.form-hint {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.btn-icon {
+    margin-right: 0.5rem;
+}
+</style>
+
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('image-preview');
+    const uploadArea = document.querySelector('.image-upload-area');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.innerHTML = `<img src="${e.target.result}" alt="Meal preview">`;
+            preview.classList.remove('hidden');
+            uploadArea.style.display = 'none';
+        };
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Drag and drop functionality
+const uploadArea = document.querySelector('.image-upload-area');
+const fileInput = document.getElementById('meal_image');
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'var(--primary-color)';
+});
+
+uploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'var(--border-color)';
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'var(--border-color)';
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        fileInput.files = files;
+        previewImage(fileInput);
+    }
+});
+</script>
+{% endblock %}

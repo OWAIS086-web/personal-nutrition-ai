@@ -1,0 +1,73 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Notifications - Profile{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>Notification Settings</h1>
+        <p>Manage your alerts and reminders</p>
+    </div>
+
+    <div class="glass-card">
+        <form method="POST" class="profile-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-section">
+                <h3>Email Notifications</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        {{ form.email_tips(class="form-checkbox") }}
+                        <label for="{{ form.email_tips.id }}">Daily nutrition tips</label>
+                    </div>
+                    <div class="checkbox-item">
+                        {{ form.email_reports(class="form-checkbox") }}
+                        <label for="{{ form.email_reports.id }}">Weekly progress reports</label>
+                    </div>
+                    <div class="checkbox-item">
+                        {{ form.email_goals(class="form-checkbox") }}
+                        <label for="{{ form.email_goals.id }}">Goal achievement alerts</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Push Notifications</h3>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        {{ form.push_meals(class="form-checkbox") }}
+                        <label for="{{ form.push_meals.id }}">Meal reminders</label>
+                    </div>
+                    <div class="checkbox-item">
+                        {{ form.push_water(class="form-checkbox") }}
+                        <label for="{{ form.push_water.id }}">Water intake reminders</label>
+                    </div>
+                    <div class="checkbox-item">
+                        {{ form.push_coaching(class="form-checkbox") }}
+                        <label for="{{ form.push_coaching.id }}">AI coaching insights</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Frequency Settings</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.tip_frequency.label(class="form-label") }}
+                        {{ form.tip_frequency(class="form-select") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.report_frequency.label(class="form-label") }}
+                        {{ form.report_frequency(class="form-select") }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">← Back to Profile</a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

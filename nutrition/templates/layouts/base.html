@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ current_user.theme if current_user.is_authenticated else 'light' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Personal Nutrition AI{% endblock %}</title>
+    
+    <!-- Added PWA meta tags and enhanced mobile support -->
+    <meta name="description" content="AI-powered personal nutrition tracking and coaching">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Nutrition AI">
+    
+    <!-- CSRF Token for AJAX requests -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- Enhanced Favicons -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='icons/icon-512.png') }}">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="{{ url_for('static', filename='css/main.css') }}" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='js/main.js') }}" as="script">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-layout.css') }}">
+    
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    {% if current_user.is_authenticated %}
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="{{ url_for('dashboard.index') }}" class="brand-link" aria-label="Go to dashboard">
+                    <span class="brand-icon" aria-hidden="true">🥗</span>
+                    <span class="brand-text">Nutrition AI</span>
+                </a>
+            </div>
+            
+            <!-- Enhanced mobile menu with hamburger and accessibility -->
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu" aria-expanded="false">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            
+            <div class="nav-menu" id="nav-menu">
+                <a href="{{ url_for('dashboard.index') }}" class="nav-link" data-page="dashboard">
+                    <span class="nav-icon" aria-hidden="true">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('meal.upload') }}" class="nav-link" data-page="meal">
+                    <span class="nav-icon" aria-hidden="true">📷</span>
+                    <span>Add Meal</span>
+                </a>
+                <a href="{{ url_for('wearable.index') }}" class="nav-link" data-page="wearable">
+                    <span class="nav-icon" aria-hidden="true">⌚</span>
+                    <span>Wearables</span>
+                </a>
+                
+                <div class="nav-dropdown">
+                    <button class="nav-profile" onclick="toggleProfileMenu()" aria-label="User menu" aria-expanded="false">
+                        <div class="profile-avatar">
+                            <span>{{ current_user.first_name[0].upper() }}</span>
+                        </div>
+                        <span class="profile-name">{{ current_user.first_name }}</span>
+                        <span class="dropdown-arrow" aria-hidden="true">▼</span>
+                    </button>
+                    <div class="dropdown-menu" role="menu">
+                        <a href="{{ url_for('auth.profile') }}" role="menuitem">
+                            <span class="menu-icon" aria-hidden="true">⚙️</span>
+                            Profile & Settings
+                        </a>
+                        <a href="{{ url_for('meal.history') }}" role="menuitem">
+                            <span class="menu-icon" aria-hidden="true">📈</span>
+                            Meal History
+                        </a>
+                        <button onclick="showKeyboardShortcuts()" role="menuitem" class="menu-button">
+                            <span class="menu-icon" aria-hidden="true">⌨️</span>
+                            Keyboard Shortcuts
+                        </button>
+                        <hr class="menu-divider">
+                        <a href="{{ url_for('auth.logout') }}" role="menuitem">
+                            <span class="menu-icon" aria-hidden="true">🚪</span>
+                            Logout
+                        </a>
+                    </div>
+                </div>
+                
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark/light theme">
+                    <span class="theme-icon sun-icon" aria-hidden="true">☀️</span>
+                    <span class="theme-icon moon-icon" aria-hidden="true">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+    
+    <!-- Enhanced flash messages with animations and accessibility -->
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container" role="alert" aria-live="polite">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}" data-flash-type="{{ category }}">
+                        <div class="flash-content">
+                            <span class="flash-icon" aria-hidden="true">
+                                {% if category == 'success' %}✅
+                                {% elif category == 'error' %}❌
+                                {% elif category == 'warning' %}⚠️
+                                {% else %}ℹ️{% endif %}
+                            </span>
+                            <span class="flash-message">{{ message }}</span>
+                        </div>
+                        <button onclick="dismissFlash(this)" class="flash-close" aria-label="Dismiss message">×</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Added skip link for accessibility -->
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Main Content -->
+    <main class="main-content" id="main-content" tabindex="-1">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Enhanced footer with additional links and social proof -->
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer-content">
+            <div class="footer-main">
+                <div class="footer-brand">
+                    <span class="footer-logo">🥗</span>
+                    <span class="footer-title">Nutrition AI</span>
+                </div>
+                <p class="footer-disclaimer">For wellness guidance only, not medical advice. Consult healthcare professionals for medical concerns.</p>
+            </div>
+            <div class="footer-links">
+                <a href="#" class="footer-link">Privacy Policy</a>
+                <a href="#" class="footer-link">Terms of Service</a>
+                <a href="#" class="footer-link">Support</a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Personal Nutrition AI. Made with care for your health journey.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Added keyboard shortcuts modal and PWA install prompt -->
+    <!-- Keyboard Shortcuts Modal -->
+    <div id="shortcuts-modal" class="modal hidden" role="dialog" aria-labelledby="shortcuts-title" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="shortcuts-title">Keyboard Shortcuts</h3>
+                <button onclick="closeShortcutsModal()" class="modal-close" aria-label="Close shortcuts">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="shortcuts-grid">
+                    <div class="shortcut-item">
+                        <kbd>D</kbd>
+                        <span>Go to Dashboard</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>A</kbd>
+                        <span>Add New Meal</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>W</kbd>
+                        <span>Wearables</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>T</kbd>
+                        <span>Toggle Theme</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>?</kbd>
+                        <span>Show Shortcuts</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Esc</kbd>
+                        <span>Close Modals</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PWA Install Prompt -->
+    <div id="pwa-install-prompt" class="pwa-prompt hidden">
+        <div class="pwa-content">
+            <div class="pwa-icon">📱</div>
+            <div class="pwa-text">
+                <h4>Install Nutrition AI</h4>
+                <p>Get quick access from your home screen</p>
+            </div>
+            <div class="pwa-actions">
+                <button onclick="installPWA()" class="btn btn-primary btn-sm">Install</button>
+                <button onclick="dismissPWA()" class="btn btn-secondary btn-sm">Later</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Added accessibility announcements region -->
+    <!-- Screen Reader Announcements -->
+    <div id="announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modern-layout.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

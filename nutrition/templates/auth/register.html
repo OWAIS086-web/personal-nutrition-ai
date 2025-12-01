@@ -1,0 +1,212 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Register - Personal Nutrition AI{% endblock %}
+
+{% block content %}
+<div class="auth-page" data-theme="dark">
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle-btn" onclick="toggleAuthTheme()" aria-label="Toggle theme">
+        <span class="theme-icon sun-icon">☀️</span>
+        <span class="theme-icon moon-icon">🌙</span>
+    </button>
+
+    <!-- Animated Background -->
+    <div class="auth-background">
+        <div class="gradient-base"></div>
+        
+        <!-- Floating Food Items -->
+        <div class="food-particles">
+            <div class="food-item" style="--delay: 0s; --x: 10%; --y: 20%;">🍎</div>
+            <div class="food-item" style="--delay: 2s; --x: 80%; --y: 30%;">🥗</div>
+            <div class="food-item" style="--delay: 4s; --x: 15%; --y: 70%;">🥑</div>
+            <div class="food-item" style="--delay: 1s; --x: 85%; --y: 60%;">🍗</div>
+            <div class="food-item" style="--delay: 3s; --x: 50%; --y: 15%;">🥦</div>
+            <div class="food-item" style="--delay: 5s; --x: 25%; --y: 85%;">🍊</div>
+            <div class="food-item" style="--delay: 2.5s; --x: 70%; --y: 80%;">🥕</div>
+            <div class="food-item" style="--delay: 4.5s; --x: 40%; --y: 50%;">🍇</div>
+        </div>
+        
+        <!-- AI Scanning Lines -->
+        <div class="scan-lines">
+            <div class="scan-line"></div>
+            <div class="scan-line" style="animation-delay: 2.5s;"></div>
+            <div class="scan-line" style="animation-delay: 5s;"></div>
+        </div>
+        
+        <!-- AI Detection Boxes -->
+        <div class="detection-boxes">
+            <div class="detection-box" style="top: 15%; left: 12%;">
+                <div class="box-corner corner-tl"></div>
+                <div class="box-corner corner-tr"></div>
+                <div class="box-corner corner-bl"></div>
+                <div class="box-corner corner-br"></div>
+                <div class="detection-label">Apple - 95%</div>
+            </div>
+            <div class="detection-box" style="top: 60%; right: 15%; animation-delay: 2s;">
+                <div class="box-corner corner-tl"></div>
+                <div class="box-corner corner-tr"></div>
+                <div class="box-corner corner-bl"></div>
+                <div class="box-corner corner-br"></div>
+                <div class="detection-label">Salad - 92%</div>
+            </div>
+        </div>
+        
+        <!-- Neural Network -->
+        <svg class="neural-network" viewBox="0 0 800 600">
+            <defs>
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#10b981;stop-opacity:0" />
+                    <stop offset="50%" style="stop-color:#10b981;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0" />
+                </linearGradient>
+            </defs>
+            <line class="neural-line" x1="100" y1="150" x2="300" y2="200" stroke="url(#lineGradient)" />
+            <line class="neural-line" x1="100" y1="300" x2="300" y2="250" stroke="url(#lineGradient)" style="animation-delay: 0.3s;" />
+            <line class="neural-line" x1="300" y1="200" x2="500" y2="225" stroke="url(#lineGradient)" style="animation-delay: 0.6s;" />
+            <line class="neural-line" x1="300" y1="250" x2="500" y2="225" stroke="url(#lineGradient)" style="animation-delay: 0.9s;" />
+            <circle class="neural-node" cx="100" cy="150" r="8" />
+            <circle class="neural-node" cx="100" cy="300" r="8" style="animation-delay: 0.2s;" />
+            <circle class="neural-node" cx="300" cy="200" r="8" style="animation-delay: 0.4s;" />
+            <circle class="neural-node" cx="300" cy="250" r="8" style="animation-delay: 0.6s;" />
+            <circle class="neural-node" cx="500" cy="225" r="8" style="animation-delay: 0.8s;" />
+        </svg>
+        
+        <!-- Data Particles -->
+        <div class="data-particles">
+            <div class="data-particle" style="--delay: 0s;">0</div>
+            <div class="data-particle" style="--delay: 1s;">1</div>
+            <div class="data-particle" style="--delay: 2s;">0</div>
+            <div class="data-particle" style="--delay: 3s;">1</div>
+            <div class="data-particle" style="--delay: 4s;">1</div>
+            <div class="data-particle" style="--delay: 5s;">0</div>
+        </div>
+    </div>
+
+    <div class="auth-container">
+        <!-- Left Side - Branding -->
+        <div class="auth-branding">
+            <div class="brand-content">
+                <div class="brand-icon">🥗</div>
+                <h1 class="brand-title">Nutrition AI</h1>
+                <p class="brand-tagline">Your AI-powered wellness companion</p>
+                
+                <div class="features-list">
+                    <div class="feature-item">
+                        <span class="feature-icon">📸</span>
+                        <span class="feature-text">AI Food Recognition</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📊</span>
+                        <span class="feature-text">Smart Nutrition Tracking</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🎯</span>
+                        <span class="feature-text">Personalized Goals</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">💡</span>
+                        <span class="feature-text">AI Health Coaching</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Form -->
+        <div class="auth-form-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h2>Join Nutrition AI</h2>
+                    <p>Create your account to start your wellness journey</p>
+                </div>
+                
+                <form method="POST" class="auth-form">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="label-icon">👤</span>
+                                First Name
+                            </label>
+                            {{ form.first_name(class="form-input", placeholder="First name") }}
+                            {% if form.first_name.errors %}
+                                <div class="form-error">{{ form.first_name.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="label-icon">👤</span>
+                                Last Name
+                            </label>
+                            {{ form.last_name(class="form-input", placeholder="Last name") }}
+                            {% if form.last_name.errors %}
+                                <div class="form-error">{{ form.last_name.errors[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="label-icon">✉️</span>
+                            Email
+                        </label>
+                        {{ form.email(class="form-input", placeholder="your.email@example.com") }}
+                        {% if form.email.errors %}
+                            <div class="form-error">{{ form.email.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="label-icon">🔒</span>
+                            Password
+                        </label>
+                        <div class="password-wrapper">
+                            {{ form.password(class="form-input", placeholder="Create a strong password", id="password") }}
+                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                <span class="eye-icon">👁️</span>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="form-error">{{ form.password.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="label-icon">🔒</span>
+                            Confirm Password
+                        </label>
+                        <div class="password-wrapper">
+                            {{ form.password2(class="form-input", placeholder="Confirm your password", id="password2") }}
+                            <button type="button" class="password-toggle" onclick="togglePassword('password2')">
+                                <span class="eye-icon">👁️</span>
+                            </button>
+                        </div>
+                        {% if form.password2.errors %}
+                            <div class="form-error">{{ form.password2.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <span>Create Account</span>
+                        <span class="btn-arrow">→</span>
+                    </button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="{{ url_for('auth.login') }}" class="auth-link">Sign in here</a></p>
+                </div>
+
+                <div class="auth-disclaimer">
+                    <p>For wellness guidance only, not medical advice. Consult healthcare professionals for medical concerns.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}
