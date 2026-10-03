@@ -1,22 +1,37 @@
-Personal Nutrition AI — AI-Powered Wellness Companion
-An AI-powered nutrition and wellness platform that turns meal photos into structured nutrition insights, tracks daily/macronutrient goals, and provides personalized AI coaching based on user preferences, dietary restrictions, health goals, and recent nutrition history.
+# Personal Nutrition AI --- AI-Powered Wellness Companion
 
- 
-Overview
-Personal Nutrition AI is a full-stack wellness application built around the idea of making nutrition tracking as simple as taking a photo.
-Instead of requiring users to manually enter every food item, the platform can analyze a meal image using OpenAI vision models, identify visible foods, estimate serving sizes, and calculate nutrition values for the estimated serving.
-The platform then combines that nutrition data with the user's:
-- Dietary preferences
-- Allergies and food restrictions
-- Health goals
-- Activity level
-- Recent meals
-- Nutrition history
-to provide personalized AI-generated coaching and insights.
-Core AI Capabilities
-1. AI Food Recognition
-Users upload a meal image and the vision pipeline attempts to identify the visible food items.
-The AI response is normalized into structured data containing:
+> **An AI-powered nutrition and wellness platform that turns meal photos
+> into structured nutrition insights, tracks daily/macronutrient goals,
+> and provides personalized AI coaching.**
+
+[![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.3.3-black.svg)](https://flask.palletsprojects.com/)
+[![OpenAI](https://img.shields.io/badge/AI-OpenAI%20Vision-412991.svg)](https://openai.com/)
+[![SQLAlchemy](https://img.shields.io/badge/ORM-SQLAlchemy-red.svg)](https://www.sqlalchemy.org/)
+[![Database](https://img.shields.io/badge/Database-SQLite%20%7C%20PostgreSQL-336791.svg)](https://www.postgresql.org/)
+
+------------------------------------------------------------------------
+
+## Overview
+
+**Personal Nutrition AI** is a full-stack AI wellness application
+designed to make nutrition tracking as simple as taking a photo.
+
+Users can upload a meal image and the application uses **OpenAI vision
+models** to identify visible foods, estimate serving sizes, and
+calculate estimated nutritional values. The platform combines meal data
+with dietary preferences, allergies, health goals, activity level,
+recent meals, and nutrition history to deliver personalized AI coaching
+and insights.
+
+## Core AI Capabilities
+
+### AI Food Recognition
+
+The vision pipeline analyzes uploaded meal images and returns structured
+information such as:
+
+``` json
 {
   "food_name": "Grilled Chicken Breast",
   "estimated_grams": 180,
@@ -34,50 +49,42 @@ The AI response is normalized into structured data containing:
     "fat": 6.5
   }
 }
+```
 
-The application validates the returned structure, normalizes numeric values, clamps confidence scores, and calculates serving-level nutrition.
-Vision model strategy
-The application attempts:
+The application validates AI output, normalizes numeric values, clamps
+confidence scores, and calculates serving-level nutrition.
+
+### Vision Model Strategy
+
+``` text
 GPT-4o
    ↓
 GPT-4o-mini
    ↓
 Fallback Food Detection
+```
 
-The fallback system uses an internal nutrition database when the external AI service is unavailable.
-This makes the meal-analysis workflow more resilient rather than completely dependent on a single API response.
-2. AI Nutrition Coaching
-The AICoachService provides several AI-powered workflows:
-Daily Nutrition Tip
-Generates a short personalized recommendation using the user's profile and recent nutrition context.
-Meal Analysis
-Reviews a specific meal using:
-- Calories
-- Protein
-- Carbohydrates
-- Fat
-- Food items
-- Meal type
-- Dietary preferences
-- Health goals
-- Allergies
-Weekly Insights
-Analyzes the user's recent nutrition history and generates:
-- Progress observations
-- Nutrition patterns
-- Positive feedback
-- Suggested improvements
-Goal-Based Coaching
-Provides recommendations based on goals such as:
-- Weight loss
-- Muscle gain
-- Heart health
-- Energy improvement
-- Better sleep
-- Digestive health
-3. Personalized User Context
-The AI does not operate only on generic prompts.
-It builds a user-specific context containing information such as:
+A local fallback nutrition database helps preserve basic functionality
+when the external vision API is unavailable.
+
+### AI Nutrition Coaching
+
+`AICoachService` supports:
+
+-   Personalized daily nutrition tips
+-   AI meal analysis
+-   Weekly nutrition insights
+-   Goal-specific coaching
+-   Dietary preference awareness
+-   Allergy-aware context
+-   Recent meal context
+
+Goal-oriented coaching supports areas such as weight loss, muscle gain,
+heart health, energy, sleep, and digestive health.
+
+## Personalized AI Context
+
+``` text
 User
 ├── Dietary Preferences
 ├── Allergies
@@ -86,21 +93,26 @@ User
 ├── Units
 ├── Recent Meals
 └── Average Daily Calories
+```
 
-That context is then injected into the coaching workflow so recommendations can be tailored to the user's profile.
-4. Nutrition Tracking
-Every meal can store detailed nutritional values including:
-- Calories
-- Protein
-- Carbohydrates
-- Fat
-- Food item
-- Quantity
-- Unit
-- Meal type
-- Meal date
-- Meal image
-The application can calculate:
+This context is incorporated into coaching prompts to generate more
+relevant responses.
+
+## Nutrition Tracking
+
+The platform tracks:
+
+-   Calories
+-   Protein
+-   Carbohydrates
+-   Fat
+-   Food items
+-   Quantity and units
+-   Meal type
+-   Meal date
+-   Meal images
+
+``` text
 Per Food
    ↓
 Per Meal
@@ -110,84 +122,47 @@ Daily Totals
 Weekly Statistics
    ↓
 Goal Progress
+```
 
-5. BMR, TDEE & Macro Calculation
-The application includes a dedicated NutritionCalculator service.
-BMR
-Uses the Mifflin-St Jeor equation to estimate basal metabolic rate.
-TDEE
-Applies activity multipliers for:
-Sedentary
-Light
-Moderate
-Active
-Extra Active
+## BMR, TDEE & Macro Calculation
 
-Macro Targets
-The platform calculates protein, carbohydrate, and fat targets based on calorie goals and the selected objective.
-Supported goal strategies include:
-- Weight loss
-- Muscle gain
-- Maintenance
-6. Goal Progress Dashboard
-The dashboard tracks actual intake against daily targets.
-Example:
-Calories
-████████████████░░░░ 82%
+The dedicated `NutritionCalculator` service supports:
 
-Protein
-██████████████░░░░░░ 71%
+-   BMR estimation using the **Mifflin-St Jeor equation**
+-   TDEE estimation using activity multipliers
+-   Protein, carbohydrate, and fat target calculation
+-   Weight-loss, muscle-gain, and maintenance strategies
 
-Carbohydrates
-█████████████████░░░ 86%
+## Analytics Dashboard
 
-Fat
-███████████░░░░░░░░░ 58%
+The application provides nutrition analytics including:
 
-The backend exposes APIs for retrieving current totals, target values, and progress percentages.
-7. Nutrition Analytics
-The dashboard provides analytics across configurable time periods.
-Tracked metrics include:
-- Daily calories
-- Protein
-- Carbohydrates
-- Fat
-- Total meals
-- Average intake
-- Highest intake
-- Lowest intake
-- Meal frequency
-- Hourly meal distribution
-The application also exposes JSON APIs for frontend visualization and reporting.
-8. Meal Frequency Analysis
-The system analyzes eating patterns by:
-Meal Type
-Breakfast
-Lunch
-Dinner
-Snack
+-   Daily calories
+-   Protein
+-   Carbohydrates
+-   Fat
+-   Total meals
+-   Average intake
+-   Highest and lowest intake
+-   Meal frequency
+-   Hourly meal distribution
+-   Goal progress
 
-Time of Day
-It also analyzes the hour at which meals were logged, enabling the dashboard to surface meal-timing patterns.
-9. Health & Wearable Data Layer
-The application contains a health-data model designed around imported health metrics.
-Supported health-data concepts include:
-- Steps
-- Calories
-- Distance
-- Heart rate
-- Sleep
-- Active minutes
-Health records track:
-Source
-Import Type
-Date
-Value
-Unit
-User
+## Apple Health / Health Data Layer
 
-The platform also includes an Apple Health service layer for processing exported health records and mapping Apple Health identifiers into application-level metrics.
-Example:
+The application contains a health-data model for metrics such as:
+
+-   Steps
+-   Calories
+-   Distance
+-   Heart rate
+-   Sleep
+-   Active minutes
+
+The Apple Health service maps exported health identifiers into
+application metrics.
+
+``` text
 HKQuantityTypeIdentifierStepCount
                 ↓
               steps
@@ -195,57 +170,48 @@ HKQuantityTypeIdentifierStepCount
 HKQuantityTypeIdentifierHeartRate
                 ↓
            heart_rate
+```
 
-The repository describes this Apple Health integration as a simplified export-processing implementation rather than native iOS HealthKit integration.
+> Apple Health support currently uses simplified export processing
+> rather than native iOS HealthKit integration.
 
-10. Data Export
-Users can export nutrition information through API endpoints.
-Supported output formats include:
-JSON
-CSV
+## Data Export
 
-Exported data can contain:
-- Date
-- Meal type
-- Food name
-- Quantity
-- Unit
-- Calories
-- Protein
-- Carbohydrates
-- Fat
-11. Authentication & Security
-Security is implemented using several Flask extensions and controls:
-- Flask-Login
-- Password hashing with bcrypt
-- CSRF protection
-- Flask-WTF
-- Rate limiting
-- Secure session cookies
-- HTTP-only cookies
-- SameSite cookie configuration
-- Input validation
-- Secure file-name handling
-- Upload size limits
-Protected API operations require authentication.
-AI endpoints also have rate limits to reduce abuse and unnecessary API consumption.
-12. AI Interaction Logging
-AI interactions are persisted through an AILog model.
-Logged information can include:
+Nutrition information can be exported through API workflows in:
+
+-   JSON
+-   CSV
+
+## Security
+
+Security-related implementation includes:
+
+-   Flask-Login authentication
+-   bcrypt password hashing
+-   CSRF protection
+-   Flask-WTF validation
+-   API rate limiting
+-   Authenticated routes
+-   Secure filename handling
+-   Upload limits
+
+## AI Interaction Logging
+
+AI requests can be persisted using the `AILog` model:
+
+``` text
 User
 Request Type
 Prompt
 Response
+```
 
-This provides a foundation for:
-- AI usage analytics
-- Debugging
-- Prompt evaluation
-- Product improvement
-- Interaction auditing
-13. Resilient AI Architecture
-The project uses graceful degradation throughout the AI workflow.
-For example:
+This provides a foundation for debugging, AI usage analytics, prompt
+evaluation, and future system improvement.
+
+## Resilient AI Architecture
+
+``` text
 User Upload
      │
      ▼
@@ -260,10 +226,14 @@ OpenAI Vision
            │
            ▼
     Nutrition Database
+```
 
-The coaching layer also has fallback responses when OpenAI is unavailable.
-This means the application can continue providing basic functionality even when the external AI dependency fails.
-Architecture
+The AI coaching layer also provides fallback responses when the external
+AI service is unavailable.
+
+## System Architecture
+
+``` text
                          ┌───────────────────────┐
                          │     Web Interface     │
                          │    HTML/CSS/JS/PWA    │
@@ -272,9 +242,7 @@ Architecture
                                      ▼
                          ┌───────────────────────┐
                          │      Flask App        │
-                         │   Auth / Dashboard    │
-                         │ Meals / Wearables     │
-                         │        API            │
+                         │ Auth / Dashboard/API  │
                          └───────────┬───────────┘
                                      │
               ┌──────────────────────┼──────────────────────┐
@@ -287,289 +255,258 @@ Architecture
               │                      │
               └──────────────┬───────┘
                              ▼
-                        AI Interaction Log
+                       AI Interaction Log
                              │
                              ▼
-                    ┌───────────────────┐
-                    │    SQLAlchemy     │
-                    │      Models       │
-                    └─────────┬─────────┘
-                              │
-                              ▼
+                       SQLAlchemy ORM
+                             │
+                             ▼
                       SQLite / PostgreSQL
+```
 
-Technology Stack
-Backend
-- Python
-- Flask 2.3.3
-- Flask-SQLAlchemy
-- Flask-Migrate
-- Flask-Login
-- Flask-WTF
-- Flask-Limiter
-- WTForms
-- Werkzeug
-AI
-- OpenAI GPT-4o
-- OpenAI GPT-4o-mini
-- OpenAI Chat Completions
-- Prompt Engineering
-- Vision-based Food Recognition
-- AI Nutrition Coaching
-Data & Processing
-- SQLAlchemy
-- SQLite
-- PostgreSQL support
-- Pillow
-- Requests
-- JSON
-- Database migrations
-Security
-- bcrypt
-- CSRF protection
-- Rate limiting
-- Secure sessions
-- Authenticated routes
-- Secure file uploads
-Frontend
-- HTML5
-- CSS3
-- JavaScript
-- Responsive UI
-- Dashboard visualizations
-- PWA/service-worker support
-Project Structure
+## Technology Stack
+
+**Backend:** Python, Flask, Flask-SQLAlchemy, Flask-Migrate,
+Flask-Login, Flask-WTF, Flask-Limiter, WTForms, Werkzeug
+
+**AI:** OpenAI GPT-4o, GPT-4o-mini, OpenAI Chat Completions, prompt
+engineering, multimodal food recognition
+
+**Data:** SQLAlchemy, SQLite, PostgreSQL support, Pillow, Requests, JSON
+
+**Frontend:** HTML5, CSS3, JavaScript, responsive dashboard UI,
+PWA/service-worker support
+
+## Project Structure
+
+``` text
 personal-nutrition-ai/
-│
 ├── app.py
 ├── config.py
 ├── requirements.txt
-│
 ├── nutrition/
 │   ├── __init__.py
 │   ├── extensions.py
-│   │
 │   ├── controllers/
 │   │   ├── api_controller.py
 │   │   ├── auth_controller.py
 │   │   ├── dashboard_controller.py
 │   │   ├── meal_controller.py
 │   │   └── wearable_controller.py
-│   │
 │   ├── forms/
 │   ├── models/
 │   │   ├── user.py
 │   │   ├── meal.py
 │   │   ├── wearable.py
 │   │   └── ai_log.py
-│   │
 │   ├── services/
 │   │   ├── food_vision.py
 │   │   ├── ai_coach.py
 │   │   ├── nutrition_calc.py
 │   │   ├── apple_health_service.py
 │   │   └── fitbit_service.py
-│   │
 │   ├── templates/
-│   │   ├── auth/
-│   │   ├── dashboard/
-│   │   ├── meals/
-│   │   └── wearables/
-│   │
 │   └── static/
-│
 ├── migrations/
 ├── styles/
-│
 ├── test_dashboard_api.py
 ├── populate_dummy_data.py
 ├── verify_data.py
 └── create_portfolio_pdf.py
+```
 
-API Surface
-The application exposes authenticated JSON endpoints for AI and analytics workflows.
-Nutrition
+## API Surface
+
+### Nutrition & Analytics
+
+``` http
 GET /api/nutrition-stats
 GET /api/goal-progress
 GET /api/meal-frequency
 GET /api/wearable-integration
+```
 
-AI Coaching
+### AI Coaching
+
+``` http
 POST /api/analyze
 POST /api/coach
 GET  /api/coach/daily-tip
 GET  /api/coach/weekly-insights
 GET  /api/coach/goal-coaching
 POST /api/coach/meal-feedback
+```
 
-Dashboard
+### Dashboard
+
+``` http
 GET /dashboard/api/nutrition-stats
 GET /dashboard/api/goal-progress
 GET /dashboard/api/meal-frequency
 GET /dashboard/api/wearable-integration
 GET /dashboard/api/export-data
+```
 
-Example AI Workflow
-                Meal Photo
-                    │
-                    ▼
-             Image Validation
-                    │
-                    ▼
-             OpenAI Vision API
-                    │
-             ┌──────┴──────┐
-             │             │
-          Success         Error
-             │             │
-             ▼             ▼
-       Food Detection    Fallback
-             │
-             ▼
-      Portion Estimation
-             │
-             ▼
-      Nutrition / 100g
-             │
-             ▼
-       Serving Calculation
-             │
-             ▼
-       Meal Persistence
-             │
-             ▼
-        AI Meal Analysis
-             │
-             ▼
-       Dashboard Insights
+## AI Meal Workflow
 
-Reliability Engineering
-A key design principle of the project is graceful degradation.
-The system includes fallbacks for:
-- Vision API failures
-- Missing OpenAI credentials
-- OpenAI package initialization problems
-- API response parsing failures
-- AI coaching failures
-- Nutrition lookup
-This gives the application a better user experience when external AI services are unavailable.
-Testing & Validation
-The repository includes an API verification script covering:
-- Nutrition statistics
-- Goal progress
-- Meal frequency
-- Health/wearable data
-- Recent meals
-Example:
+``` text
+Meal Photo
+    │
+    ▼
+Image Validation
+    │
+    ▼
+OpenAI Vision
+    │
+    ├── Success
+    │      ↓
+    │ Food Detection
+    │      ↓
+    │ Portion Estimation
+    │      ↓
+    │ Nutrition Calculation
+    │
+    └── Failure → Fallback Detection
+                   │
+                   ▼
+             Meal Persistence
+                   │
+                   ▼
+              AI Coaching
+                   │
+                   ▼
+            Dashboard Insights
+```
+
+## Testing
+
+Run the dashboard API test:
+
+``` bash
 python test_dashboard_api.py
+```
 
-The project also includes data population and validation utilities for development/demo environments.
-Local Development
-1. Clone
+Development/demo utilities are also included for populating and
+validating data.
+
+## Local Development
+
+### Clone
+
+``` bash
 git clone https://github.com/OWAIS086-web/personal-nutrition-ai.git
 cd personal-nutrition-ai
+```
 
-2. Create Virtual Environment
-Windows
+### Create a Virtual Environment
+
+Windows:
+
+``` bash
 python -m venv venv
 venv\Scripts\activate
+```
 
-Linux/macOS
+Linux/macOS:
+
+``` bash
 python3 -m venv venv
 source venv/bin/activate
+```
 
-3. Install Dependencies
+### Install Dependencies
+
+``` bash
 pip install -r requirements.txt
+```
 
-4. Configure Environment
-Create your environment configuration and provide an OpenAI API key:
+### Configure Environment
+
+``` env
 OPENAI_API_KEY=your_openai_api_key
 FLASK_ENV=development
+```
 
-Never commit real API credentials.
-5. Run
+> Never commit real API keys or production credentials.
+
+### Run
+
+``` bash
 python app.py
+```
 
-The application starts on:
+Open:
+
+``` text
 http://localhost:5000
+```
 
-Development Data
-The repository includes scripts for generating and validating development/demo data.
-python populate_dummy_data.py
-python verify_data.py
+## Engineering Highlights
 
-There are also specialized scripts for data validation and health-goal cleanup.
-Why This Project Matters
-Personal Nutrition AI demonstrates practical engineering across several AI application layers:
-Computer Vision
-      +
-Generative AI
-      +
-Structured Data
-      +
-Personalization
-      +
-Analytics
-      +
-Backend Engineering
-      +
-Security
+This project demonstrates:
 
-It is not simply an AI chatbot.
-The application connects multimodal AI inference to a complete product workflow:
-Image
-  ↓
-AI Recognition
-  ↓
-Structured Nutrition
-  ↓
-Database
-  ↓
-Analytics
-  ↓
-Personalized Coaching
+-   Multimodal AI integration
+-   OpenAI Vision API integration
+-   Prompt engineering
+-   Structured AI output parsing
+-   AI response validation
+-   Graceful AI fallbacks
+-   Personalized context construction
+-   Nutrition calculations
+-   Flask backend architecture
+-   REST APIs
+-   SQLAlchemy ORM
+-   Database migrations
+-   Authentication
+-   CSRF protection
+-   API rate limiting
+-   Secure file uploads
+-   Dashboard analytics
+-   Health-data modeling
+-   Data export
+-   Testing and validation
 
-Engineering Highlights
-This project demonstrates experience with:
-- AI vision integration
-- Prompt engineering
-- OpenAI API integration
-- Structured AI output parsing
-- AI response validation
-- Graceful AI fallbacks
-- Personalized AI context construction
-- Nutrition calculations
-- REST APIs
-- Flask application architecture
-- SQLAlchemy ORM
-- Database migrations
-- Authentication
-- RBAC-style protected workflows
-- CSRF protection
-- Rate limiting
-- Secure file uploads
-- Dashboard analytics
-- Health-data modeling
-- Data export
-- Testing and validation
-Important Disclaimer
-This project is intended for software demonstration, experimentation, and educational purposes.
-AI-generated food recognition and nutritional estimates are approximate and should not be treated as medical advice, diagnosis, or a substitute for a qualified nutrition professional.
-Roadmap
-Potential future improvements:
-- Native Apple HealthKit integration
-- Production Fitbit/OAuth integration
-- Dedicated food-detection model
-- More comprehensive nutrition database
-- Barcode scanning
-- Recipe generation
-- Meal planning
-- Grocery-list generation
-- Multilingual AI coaching
-- Mobile application
-- Advanced nutrition forecasting
-- Personalized recommendation models
-Author
-Awais Saeed
-Senior Software Engineer | AI/ML Engineer | Python Backend Engineer
-GitHub: https://github.com/OWAIS086-web
+## Roadmap
+
+Potential future improvements include:
+
+-   Native Apple HealthKit integration
+-   Production Fitbit/OAuth integration
+-   Dedicated food-detection models
+-   Comprehensive nutrition database
+-   Barcode scanning
+-   AI recipe generation
+-   Personalized meal planning
+-   Grocery-list generation
+-   Multilingual AI coaching
+-   Mobile applications
+-   Advanced nutrition forecasting
+-   Personalized recommendation models
+
+## Disclaimer
+
+> **Personal Nutrition AI is intended for software demonstration,
+> experimentation, and educational purposes. AI-generated food
+> recognition and nutritional estimates are approximate and should not
+> be treated as medical advice, diagnosis, or a substitute for a
+> qualified healthcare or nutrition professional.**
+
+## Author
+
+### Awais Saeed
+
+**Senior Software Engineer \| AI/ML Engineer \| Python Backend
+Engineer**
+
+-   GitHub: [OWAIS086-web](https://github.com/OWAIS086-web)
+-   Project: [Personal Nutrition
+    AI](https://github.com/OWAIS086-web/personal-nutrition-ai)
+
+------------------------------------------------------------------------
+
+::: {align="center"}
+### Built with Python, Flask, OpenAI Vision & Applied AI Engineering
+
+**If you find this project useful, consider giving the repository a
+star.**
+:::
